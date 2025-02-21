@@ -48,9 +48,11 @@ Before you get started, ensure you have the following installed:
   To install `pnpm`, follow the [official documentation](https://pnpm.io/installation).
 
   You can check if pnpm is correctly installed using:
+
   ```bash
   pnpm -v
   ```
+
 - **Git**: ensure Git is installed and properly configured.
 
 ---
@@ -132,9 +134,9 @@ The project is configured for at least 95% of coverage on branches, functions, l
 aims to stay at 100% while it is possible.
 
 > **When writing tests, aim to fully validate the features and reliability of the code. Coverage is just a baseline
-metric to ensure all paths are considered, but the focus should be on comprehensively testing each scenario—including
-common usage, edge cases, and unexpected events. Effective tests help ensure the project remains robust and maintainable
-over time.**
+> metric to ensure all paths are considered, but the focus should be on comprehensively testing each scenario—including
+> common usage, edge cases, and unexpected events. Effective tests help ensure the project remains robust and maintainable
+> over time.**
 
 #### Running Unit Tests
 
@@ -174,7 +176,7 @@ Use the following structure as a template for a unit test:
 
 ```typescript
 // example.test.ts
-import {ExampleClass} from '../src/example';
+import { ExampleClass } from '../src/example';
 
 describe('Example Class', () => {
   it('should return the expected result when calling action', () => {
@@ -190,7 +192,7 @@ describe('Example Class', () => {
 
     // Assert
     expect(result).toBe(expected);
-    expect(spy).toHaveBeenCalledWith(input)
+    expect(spy).toHaveBeenCalledWith(input);
   });
 });
 ```
@@ -210,7 +212,7 @@ test.
 [Here](tests/unit/mocks/flaky-url-validator.mock.ts) is an example of a mock representing a flaky URL validator instance
 
 ```typescript
-import {URLValidator} from '../../../src/validators';
+import { URLValidator } from '../../../src/validators';
 
 /**
  * Class representing a FlakyURLValidator which extends URLValidator.
@@ -235,9 +237,9 @@ The repository includes demo projects to allow you to test your changes in diffe
 
 From the project's root, set up the demo apps
 
- ```bash
+```bash
 pnpm demo setup
- ```
+```
 
 This installs the demos dependencies, builds them if needed, and sets up the Strapi app used by the different demos.
 
@@ -261,9 +263,9 @@ instructions on how to run them.
 Before submitting a PR (pull request), verify that all checks pass:
 
 1. **Run Linting**
-    ```bash
-    pnpm lint
-    ```
+   ```bash
+   pnpm lint
+   ```
 2. **Format Code**
    ```bash
    pnpm prettier:check
@@ -338,21 +340,25 @@ First, ensure the code adheres to the project's code style, conventions, and bui
 commands**:
 
 - **Linting**: checks for code style issues.
+
   ```bash
   pnpm lint
   ```
 
 - **Formatting**: verifies if the code adheres to `Prettier` formatting rules.
+
   ```bash
   pnpm prettier:check
   ```
 
 - **TypeScript Validation**: ensures TypeScript types are valid and there is no type-related breaking error.
+
   ```bash
   pnpm ts:check
   ```
 
 - **Unit Tests**: runs all tests and checks if test coverage meets the required threshold.
+
   ```bash
   pnpm test:cov
   ```
@@ -405,6 +411,7 @@ To safely release a new version, maintainers must follow these steps:
 1. Create a release branch from `main` and ensure it is up to date.
 
    The branch name should follow the format: `releases/<major>.<minor>.<patch>`.
+
 2. Install the latest dependencies with `pnpm install`.
 3. Update the package version in the root [package.json](./package.json):
    ```diff

@@ -332,7 +332,7 @@ To display the entire list of available commands, use `pnpm demo help`
 
 - **`pnpm demo app:env:setup`**  
   Sets up the `.env` file for the main Strapi app by copying the example `.env.example` file if no `.env` file exists.
-  
+
   This ensures the environment is configured appropriately.
 
   ```bash
