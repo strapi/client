@@ -7,4 +7,4 @@ pnpm-lock.yaml
 .next
 .idea
 node_modules
-
+.strapi-updater.json
