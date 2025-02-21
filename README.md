@@ -44,6 +44,7 @@
    - [`.single()`](#singleresource)
 5. [Debug](#-debug)
 6. [Demo Projects](#-demo-projects)
+7. [Contributing](./CONTRIBUTING.md)
 
 ## 🛠 Getting started
 

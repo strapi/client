@@ -58,7 +58,7 @@
     "test": "jest --verbose",
     "test:cov": "jest --verbose --coverage",
     "ts:check": "tsc -p tsconfig.build.json --noEmit",
-    "watch": "rollup --config rollup.config.mjs --watch --failAfterWarnings",
+    "watch": "pnpm run build --watch",
     "prepack": "pnpm exec ./scripts/pre-pack.sh"
   },
   "devDependencies": {
