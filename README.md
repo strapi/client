@@ -34,7 +34,7 @@
 1. [Getting Started](#-getting-started)
    - [Prerequisites](#pre-requisites)
    - [Installation](#installation)
-2. [Creating and Configuring a Strapi Client Instance](#-creating-and-configuring-the-sdk-instance)
+2. [Creating and Configuring a Strapi Client Instance](#-creating-and-configuring-the-client-instance)
    - [Basic Configuration](#basic-configuration)
    - [Authentication](#authentication)
      - [API Token Authentication](#api-token-authentication)
@@ -44,6 +44,7 @@
    - [`.single()`](#singleresource)
 5. [Debug](#-debug)
 6. [Demo Projects](#-demo-projects)
+7. [Contributing](./CONTRIBUTING.md)
 
 ## 🛠 Getting started
 
@@ -331,7 +332,7 @@ To display the entire list of available commands, use `pnpm demo help`
 
 - **`pnpm demo app:env:setup`**  
   Sets up the `.env` file for the main Strapi app by copying the example `.env.example` file if no `.env` file exists.
-  
+
   This ensures the environment is configured appropriately.
 
   ```bash
