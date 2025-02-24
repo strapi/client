@@ -254,7 +254,7 @@ pnpm demo app:start
 Then navigate to any of the example in the [./demo](./demo) folder, and refer to their respective `package.json` for
 instructions on how to run them.
 
-> **Note:** feel free to locally modify the demos to test your changes but avoid commiting them.
+> **Note:** feel free to locally modify the demos to test your changes but avoid commiting them unless they provide fixes or additional functionality.
 
 ---
 
