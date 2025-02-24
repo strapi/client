@@ -43,7 +43,7 @@ Before you get started, ensure you have the following installed:
   ```bash
   node -v
   ```
-- **pnpm**: the project uses `pnpm` as a package manager.
+- **pnpm**: the project requires `pnpm` as the package manager.
 
   To install `pnpm`, follow the [official documentation](https://pnpm.io/installation).
 
