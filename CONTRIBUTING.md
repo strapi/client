@@ -131,7 +131,7 @@ Unit tests ensure the reliability and correctness of the features. The project
 uses [Jest](https://jestjs.io) as the testing framework.
 
 The project is configured for at least 95% of coverage on branches, functions, lines, and statement, but the project
-aims to stay at 100% while it is possible.
+aims to stay at 100% as long as possible.
 
 > **When writing tests, aim to fully validate the features and reliability of the code. Coverage is just a baseline
 > metric to ensure all paths are considered, but the focus should be on comprehensively testing each scenario—including
