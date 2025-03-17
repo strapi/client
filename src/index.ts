@@ -99,3 +99,4 @@ export * from './errors';
 // Public types and interfaces
 export type { StrapiConfig, Strapi } from './client';
 export type { CollectionTypeManager, SingleTypeManager } from './content-types';
+export type { FilesManager, FileQueryParams, FileResponse, FileListResponse } from './files';

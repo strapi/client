@@ -1,0 +1,137 @@
+import createDebug from 'debug';
+
+import { HttpClient } from '../http';
+import { URLHelper } from '../utilities';
+import { validateFileQueryParams, validateFileId } from '../validators';
+
+import { FileQueryParams, FileListResponse, FileResponse } from './types';
+
+const debug = createDebug('strapi:files');
+
+/**
+ * A service class designed for interacting with the file management API in a Strapi application.
+ *
+ * It provides methods to fetch and retrieve files uploaded through the Strapi Media Library.
+ */
+export class FilesManager {
+  private readonly _httpClient: HttpClient;
+
+  /**
+   * Creates an instance of FilesManager.
+   *
+   * @param httpClient - An instance of HttpClient to handle HTTP communication.
+   *
+   * @example
+   * ```typescript
+   * const httpClient = new HttpClient('http://localhost:1337/api');
+   * const filesManager = new FilesManager(httpClient);
+   * ```
+   */
+  constructor(httpClient: HttpClient) {
+    this._httpClient = httpClient;
+
+    debug('initialized files manager');
+  }
+
+  /**
+   * Retrieves a list of files based on optional query parameters.
+   *
+   * @param queryParams - Optional parameters to filter or sort the results.
+   * @returns A promise that resolves to a list of files.
+   *
+   * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
+   * @throws {Error} if invalid query parameters are provided.
+   *
+   * @example
+   * ```typescript
+   * const filesManager = new FilesManager(httpClient);
+   *
+   * const files = await filesManager.find({
+   *   filters: { mime: { $contains: 'image' } },
+   *   sort: 'name:asc',
+   * });
+   *
+   * console.log(files);
+   * ```
+   */
+  async find(queryParams?: FileQueryParams): Promise<FileListResponse> {
+    debug('finding files');
+
+    try {
+      // Validate query parameters before making the request
+      if (queryParams) {
+        validateFileQueryParams(queryParams);
+      }
+
+      let url = '/upload/files';
+
+      if (queryParams) {
+        url = URLHelper.appendQueryParams(url, queryParams);
+      }
+
+      const response = await this._httpClient.get(url);
+      const json = await response.json();
+
+      debug('found %o files', Number(json?.length));
+
+      return json;
+    } catch (error) {
+      // Handle validation errors which are already Error instances
+      if (error instanceof Error) {
+        debug('error finding files: %o', error.message);
+        throw error;
+      }
+
+      // Pass through HTTP errors from the HttpClient
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieves a single file by its ID.
+   *
+   * @param fileId - The numeric identifier of the file to retrieve.
+   * @returns A promise that resolves to a single file.
+   *
+   * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
+   * @throws {Error} if the file ID is invalid or the file does not exist.
+   *
+   * @example
+   * ```typescript
+   * const filesManager = new FilesManager(httpClient);
+   *
+   * const file = await filesManager.findOne(1);
+   *
+   * console.log(file);
+   * ```
+   */
+  async findOne(fileId: number): Promise<FileResponse> {
+    validateFileId(fileId);
+
+    debug('finding file with ID %o', fileId);
+
+    const url = `/upload/files/${fileId}`;
+
+    try {
+      const response = await this._httpClient.get(url);
+      const json = await response.json();
+
+      // Check if the response is empty or doesn't have expected structure
+      if (!json || typeof json !== 'object') {
+        throw new Error(`File with ID ${fileId} not found or returned invalid data.`);
+      }
+
+      debug('found file with ID %o', fileId);
+
+      return json;
+    } catch (error) {
+      debug('error finding file with ID %o: %o', fileId, error);
+
+      if ((error as Response)?.status === 404) {
+        throw new Error(`File with ID ${fileId} not found.`);
+      }
+
+      throw error;
+    }
+  }
+}

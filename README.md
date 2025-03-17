@@ -42,6 +42,7 @@
 4. [Resource Managers](#-resource-managers)
    - [`.collection()`](#collectionresource)
    - [`.single()`](#singleresource)
+   - [`.files`](#files)
 5. [Debug](#-debug)
 6. [Demo Projects](#-demo-projects)
 7. [Contributing](./CONTRIBUTING.md)
@@ -198,6 +199,55 @@ const updatedHomepage = await homepage.update(
 
 // Delete the homepage content
 await homepage.delete();
+```
+
+### .files
+
+The `files` property provides access to the Strapi Media Library through the Upload plugin. It allows you to retrieve files without directly interacting with the REST API.
+
+#### Methods
+
+- `find(params?: FileQueryParams): Promise<FileListResponse>` - Retrieves a list of files based on optional query parameters
+- `findOne(fileId: number): Promise<FileResponse>` - Retrieves a single file by its ID
+
+#### Example: Finding Files
+
+```typescript
+// Initialize the client
+const client = strapi({
+  baseURL: 'http://localhost:1337/api',
+  auth: 'your-api-token',
+});
+
+// Find all files
+const allFiles = await client.files.find();
+console.log(allFiles.data);
+
+// Find files with filtering and sorting
+const imageFiles = await client.files.find({
+  filters: {
+    mime: { $contains: 'image' }, // Only get image files
+    name: { $contains: 'avatar' }, // Only get files with 'avatar' in the name
+  },
+  sort: ['name:asc'], // Sort by name in ascending order
+});
+```
+
+#### Example: Finding a Single File
+
+```typescript
+// Initialize the client
+const client = strapi({
+  baseURL: 'http://localhost:1337/api',
+  auth: 'your-api-token',
+});
+
+// Find a file by ID
+const file = await client.files.findOne(1);
+
+console.log(file.data.name); // The file name
+console.log(file.data.url); // The file URL
+console.log(file.data.mime); // The file MIME type
 ```
 
 ## 🐛 Debug
