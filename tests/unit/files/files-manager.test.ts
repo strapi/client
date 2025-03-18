@@ -310,6 +310,37 @@ describe('FilesManager', () => {
       await expect(directFilesManager.findOne(1)).rejects.toThrow();
     });
 
+    it('should handle 404 errors with a specific message', async () => {
+      // Create a mock Error to be thrown with the Response attached
+      const mockError = new Error('Not Found');
+      // @ts-ignore - Attaching status for the error handling in files manager
+      mockError.status = 404;
+      // Throw the error directly instead of returning a response
+      mockFetch.mockRejectedValueOnce(mockError);
+
+      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
+      const directFilesManager = new FilesManager(directHttpClient);
+
+      await expect(directFilesManager.findOne(999)).rejects.toThrow(
+        'File with ID 999 not found. The requested file may have been deleted or never existed.'
+      );
+    });
+
+    it('should handle HTTP errors with status codes', async () => {
+      // Create a mock Error to be thrown with a 403 status
+      const mockError = new Error('Forbidden');
+      // @ts-ignore - Attaching status for the error handling in files manager
+      mockError.status = 403;
+      mockFetch.mockRejectedValueOnce(mockError);
+
+      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
+      const directFilesManager = new FilesManager(directHttpClient);
+
+      await expect(directFilesManager.findOne(1)).rejects.toThrow(
+        'Failed to retrieve file with ID 1. Server returned status: 403.'
+      );
+    });
+
     it('should handle network errors', async () => {
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
