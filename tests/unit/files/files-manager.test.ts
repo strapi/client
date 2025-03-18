@@ -253,19 +253,19 @@ describe('FilesManager', () => {
 
     it('should throw an error for zero file ID', async () => {
       await expect(filesManager.findOne(0)).rejects.toThrow(
-        'Invalid file ID: 0. File ID must be a positive number.'
+        'Invalid file ID: 0. File ID must be a positive number greater than zero.'
       );
     });
 
     it('should throw an error for negative file ID', async () => {
       await expect(filesManager.findOne(-5)).rejects.toThrow(
-        'Invalid file ID: -5. File ID must be a positive number.'
+        'Invalid file ID: -5. File ID must be a positive number greater than zero.'
       );
     });
 
     it('should throw an error for NaN file ID', async () => {
       await expect(filesManager.findOne(NaN)).rejects.toThrow(
-        'Invalid file ID: NaN. File ID must be a positive number.'
+        'Invalid file ID: received NaN. File ID must be a valid number.'
       );
     });
 

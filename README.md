@@ -221,7 +221,7 @@ const client = strapi({
 
 // Find all files
 const allFiles = await client.files.find();
-console.log(allFiles.data);
+console.log(allFiles);
 
 // Find files with filtering and sorting
 const imageFiles = await client.files.find({
@@ -245,9 +245,9 @@ const client = strapi({
 // Find a file by ID
 const file = await client.files.findOne(1);
 
-console.log(file.data.name); // The file name
-console.log(file.data.url); // The file URL
-console.log(file.data.mime); // The file MIME type
+console.log(file.name); // The file name
+console.log(file.url); // The file URL
+console.log(file.mime); // The file MIME type
 ```
 
 ## 🐛 Debug
@@ -302,6 +302,7 @@ Below is a list of available namespaces to use:
 | `strapi:ct:collection`           | Logs interactions with collection-type content managers.                                  |
 | `strapi:ct:single`               | Logs interactions with single-type content managers.                                      |
 | `strapi:utils:url-helper`        | Logs URL helper utility operations (e.g., appending query parameters or formatting URLs). |
+| `strapi:files`                   | Logs interactions with the files manager.                                                 |
 
 ## 🚀 Demo Projects
 

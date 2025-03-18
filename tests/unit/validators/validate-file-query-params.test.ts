@@ -20,7 +20,9 @@ describe('validateFileQueryParams', () => {
     expect(() =>
       // @ts-ignore - Deliberately passing invalid type for testing
       validateFileQueryParams({ filters: 'invalid' })
-    ).toThrow('Invalid filters parameter: must be an object');
+    ).toThrow(
+      "Invalid 'filters' parameter: must be an object, received string. Example: { mime: { $contains: 'image' } }"
+    );
   });
 
   it('should not throw an error for valid sort string', () => {
@@ -35,13 +37,17 @@ describe('validateFileQueryParams', () => {
     expect(() =>
       // @ts-ignore - Deliberately passing invalid type for testing
       validateFileQueryParams({ sort: 123 })
-    ).toThrow('Invalid sort parameter: must be a string or array of strings');
+    ).toThrow(
+      "Invalid 'sort' parameter: must be a string or array of strings, received number. Examples: 'name:asc' or ['name:asc', 'createdAt:desc']"
+    );
   });
 
   it('should throw an error for sort array containing non-string items', () => {
     expect(() =>
       // @ts-ignore - Deliberately passing invalid type for testing
       validateFileQueryParams({ sort: ['name:asc', 123] })
-    ).toThrow('Invalid sort parameter: array items must be strings');
+    ).toThrow(
+      "Invalid 'sort' parameter: array item at position 1 must be a string, received number. Example format: 'fieldName:asc' or 'fieldName:desc'"
+    );
   });
 });

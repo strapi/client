@@ -12,6 +12,8 @@ const debug = createDebug('strapi:files');
  * A service class designed for interacting with the file management API in a Strapi application.
  *
  * It provides methods to fetch and retrieve files uploaded through the Strapi Media Library.
+ * Note that the Strapi upload plugin API uses a different response format than the content API,
+ * returning file data as a flat array rather than the typical data/meta structure.
  */
 export class FilesManager {
   private readonly _httpClient: HttpClient;
@@ -37,7 +39,7 @@ export class FilesManager {
    * Retrieves a list of files based on optional query parameters.
    *
    * @param queryParams - Optional parameters to filter or sort the results.
-   * @returns A promise that resolves to a list of files.
+   * @returns A promise that resolves to an array of file objects.
    *
    * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
    * @throws {Error} if invalid query parameters are provided.
@@ -51,7 +53,7 @@ export class FilesManager {
    *   sort: 'name:asc',
    * });
    *
-   * console.log(files);
+   * console.log(files); // Array of file objects
    * ```
    */
   async find(queryParams?: FileQueryParams): Promise<FileListResponse> {
@@ -83,6 +85,7 @@ export class FilesManager {
       }
 
       // Pass through HTTP errors from the HttpClient
+      debug('unexpected error finding files: %o', error);
       throw error;
     }
   }
@@ -91,7 +94,7 @@ export class FilesManager {
    * Retrieves a single file by its ID.
    *
    * @param fileId - The numeric identifier of the file to retrieve.
-   * @returns A promise that resolves to a single file.
+   * @returns A promise that resolves to a single file object.
    *
    * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
    * @throws {Error} if the file ID is invalid or the file does not exist.
@@ -102,7 +105,7 @@ export class FilesManager {
    *
    * const file = await filesManager.findOne(1);
    *
-   * console.log(file);
+   * console.log(file); // File object with details
    * ```
    */
   async findOne(fileId: number): Promise<FileResponse> {
@@ -118,7 +121,9 @@ export class FilesManager {
 
       // Check if the response is empty or doesn't have expected structure
       if (!json || typeof json !== 'object') {
-        throw new Error(`File with ID ${fileId} not found or returned invalid data.`);
+        throw new Error(
+          `File with ID ${fileId} not found or returned invalid data. Expected a file object but received ${typeof json}.`
+        );
       }
 
       debug('found file with ID %o', fileId);
@@ -127,10 +132,21 @@ export class FilesManager {
     } catch (error) {
       debug('error finding file with ID %o: %o', fileId, error);
 
+      // Handle 404 errors with a more specific message
       if ((error as Response)?.status === 404) {
-        throw new Error(`File with ID ${fileId} not found.`);
+        throw new Error(
+          `File with ID ${fileId} not found. The requested file may have been deleted or never existed.`
+        );
       }
 
+      // For other HTTP errors, provide context about the operation
+      if ((error as Response)?.status) {
+        throw new Error(
+          `Failed to retrieve file with ID ${fileId}. Server returned status: ${(error as Response).status}.`
+        );
+      }
+
+      // Rethrow the original error if it's not an HTTP response or already an Error
       throw error;
     }
   }

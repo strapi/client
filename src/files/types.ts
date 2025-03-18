@@ -10,22 +10,20 @@ export interface FileQueryParams {
 
   /**
    * Sorting criteria for the query.
-   * Example: ['name:asc']
+   * Example: ['name:asc'] or 'name:asc'
    */
   sort?: string | string[];
 
-  // TODO cannot apply pagination through the upload plugin content API routes?
   /**
-   * Pagination settings for the query.
+   * Note: Pagination is not supported by the Strapi upload plugin API.
+   * The upload plugin uses a different API structure than the content API
+   * and doesn't support the standard pagination parameters.
    */
-  // pagination?: {
-  //   page?: number;
-  //   pageSize?: number;
-  // };
 }
 
 /**
- * Response structure for a single file.
+ * Response structure for a single file from the Strapi upload plugin.
+ * This interface represents the actual response structure from the API.
  */
 export interface FileResponse {
   id: number;
@@ -51,18 +49,8 @@ export interface FileResponse {
 
 /**
  * Response structure for a list of files.
+ *
+ * Note: Unlike the core content API, the upload plugin returns a flat array of files
+ * without the data/meta structure used in the core content API responses.
  */
 export type FileListResponse = Array<FileResponse>;
-
-// TODO confirm format of response from upload plugin
-// export interface FileListResponse {
-//   data: Array<FileResponse>;
-//   meta?: {
-//     pagination: {
-//       page: number;
-//       pageSize: number;
-//       pageCount: number;
-//       total: number;
-//     };
-//   };
-// }
