@@ -203,12 +203,12 @@ await homepage.delete();
 
 ### .files
 
-The `files` property provides access to the Strapi Media Library through the Upload plugin. It allows you to retrieve files without directly interacting with the REST API.
+The `files` property provides access to the Strapi Media Library through the Upload plugin. It allows you to retrieve files metadata without directly interacting with the REST API.
 
 #### Methods
 
-- `find(params?: FileQueryParams): Promise<FileListResponse>` - Retrieves a list of files based on optional query parameters
-- `findOne(fileId: number): Promise<FileResponse>` - Retrieves a single file by its ID
+- `find(params?: FileQueryParams): Promise<FileListResponse>` - Retrieves a list of file metadata based on optional query parameters
+- `findOne(fileId: number): Promise<FileResponse>` - Retrieves the metadata for a single file by its ID
 
 #### Example: Finding Files
 
@@ -219,11 +219,11 @@ const client = strapi({
   auth: 'your-api-token',
 });
 
-// Find all files
+// Find all file metadata
 const allFiles = await client.files.find();
 console.log(allFiles);
 
-// Find files with filtering and sorting
+// Find file metadata with filtering and sorting
 const imageFiles = await client.files.find({
   filters: {
     mime: { $contains: 'image' }, // Only get image files
@@ -242,7 +242,7 @@ const client = strapi({
   auth: 'your-api-token',
 });
 
-// Find a file by ID
+// Find file metadata by ID
 const file = await client.files.findOne(1);
 
 console.log(file.name); // The file name

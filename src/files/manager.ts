@@ -2,8 +2,8 @@ import createDebug from 'debug';
 
 import { HttpClient } from '../http';
 import { URLHelper } from '../utilities';
-import { validateFileQueryParams, validateFileId } from '../validators';
 
+import { fileApiPrefix } from './constants';
 import { FileQueryParams, FileListResponse, FileResponse } from './types';
 
 const debug = createDebug('strapi:files');
@@ -12,6 +12,7 @@ const debug = createDebug('strapi:files');
  * A service class designed for interacting with the file management API in a Strapi application.
  *
  * It provides methods to fetch and retrieve files uploaded through the Strapi Media Library.
+ *
  * Note that the Strapi upload plugin API uses a different response format than the content API,
  * returning file data as a flat array rather than the typical data/meta structure.
  */
@@ -42,7 +43,6 @@ export class FilesManager {
    * @returns A promise that resolves to an array of file objects.
    *
    * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
-   * @throws {Error} if invalid query parameters are provided.
    *
    * @example
    * ```typescript
@@ -60,12 +60,7 @@ export class FilesManager {
     debug('finding files');
 
     try {
-      // Validate query parameters before making the request
-      if (queryParams) {
-        validateFileQueryParams(queryParams);
-      }
-
-      let url = '/upload/files';
+      let url = fileApiPrefix;
 
       if (queryParams) {
         url = URLHelper.appendQueryParams(url, queryParams);
@@ -109,11 +104,9 @@ export class FilesManager {
    * ```
    */
   async findOne(fileId: number): Promise<FileResponse> {
-    validateFileId(fileId);
-
     debug('finding file with ID %o', fileId);
 
-    const url = `/upload/files/${fileId}`;
+    const url = `${fileApiPrefix}/${fileId}`;
 
     try {
       const response = await this._httpClient.get(url);

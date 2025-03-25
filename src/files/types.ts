@@ -1,5 +1,8 @@
 /**
  * Parameters for querying files in the Strapi upload plugin.
+ *
+ * Note: The upload plugin uses a different API structure than the content API
+ * and doesn't support the standard pagination parameters.
  */
 export interface FileQueryParams {
   /**
@@ -13,12 +16,6 @@ export interface FileQueryParams {
    * Example: ['name:asc'] or 'name:asc'
    */
   sort?: string | string[];
-
-  /**
-   * Note: Pagination is not supported by the Strapi upload plugin API.
-   * The upload plugin uses a different API structure than the content API
-   * and doesn't support the standard pagination parameters.
-   */
 }
 
 /**
