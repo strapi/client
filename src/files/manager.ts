@@ -3,7 +3,7 @@ import createDebug from 'debug';
 import { HttpClient } from '../http';
 import { URLHelper } from '../utilities';
 
-import { fileApiPrefix } from './constants';
+import { FILE_API_PREFIX } from './constants';
 import { FileQueryParams, FileListResponse, FileResponse } from './types';
 
 const debug = createDebug('strapi:files');
@@ -59,7 +59,7 @@ export class FilesManager {
   async find(queryParams?: FileQueryParams): Promise<FileListResponse> {
     debug('finding files');
 
-    let url = fileApiPrefix;
+    let url = FILE_API_PREFIX;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -93,7 +93,7 @@ export class FilesManager {
   async findOne(fileId: number): Promise<FileResponse> {
     debug('finding file with ID %o', fileId);
 
-    const url = `${fileApiPrefix}/${fileId}`;
+    const url = `${FILE_API_PREFIX}/${fileId}`;
 
     const response = await this._httpClient.get(url);
     debug('found file with ID %o', fileId);

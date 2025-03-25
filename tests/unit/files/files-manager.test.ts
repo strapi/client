@@ -7,8 +7,6 @@ describe('FilesManager', () => {
   let filesManager: FilesManager;
   let mockFetch: jest.Mock;
 
-  // Fixture data is now imported from tests/fixtures/files.ts
-
   beforeEach(() => {
     // Setup for direct fetch mocking approach
     mockFetch = jest.fn();
@@ -18,8 +16,6 @@ describe('FilesManager', () => {
     // Create a regular HttpClient that will use the mocked fetch
     httpClient = new HttpClient({ baseURL: 'http://example.com/api' });
     filesManager = new FilesManager(httpClient);
-
-    // Keep MockHttpClient available for tests that specifically need it
   });
 
   afterEach(() => {

@@ -5,8 +5,6 @@ describe('Strapi Client - Files Integration', () => {
   let strapi: Strapi;
   let mockFetch: jest.Mock;
 
-  // Fixture data is now imported from tests/fixtures/files.ts
-
   beforeEach(() => {
     // Setup mock fetch
     mockFetch = jest.fn();
