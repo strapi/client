@@ -112,13 +112,6 @@ export class FilesManager {
       const response = await this._httpClient.get(url);
       const json = await response.json();
 
-      // Check if the response is empty or doesn't have expected structure
-      if (!json || typeof json !== 'object') {
-        throw new Error(
-          `File with ID ${fileId} not found or returned invalid data. Expected a file object but received ${typeof json}.`
-        );
-      }
-
       debug('found file with ID %o', fileId);
 
       return json;

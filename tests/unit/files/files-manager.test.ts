@@ -329,5 +329,16 @@ describe('FilesManager', () => {
       // Act & Assert
       await expect(filesManager.find()).rejects.toThrow();
     });
+
+    it('should handle non-Error type unexpected errors', async () => {
+      // Arrange
+
+      // Create a non-Error type that would trigger the specific error path
+      const nonErrorObject = { message: 'This is not an Error instance' };
+      mockFetch.mockRejectedValueOnce(nonErrorObject);
+
+      // Act & Assert
+      await expect(filesManager.find()).rejects.toEqual(nonErrorObject);
+    });
   });
 });
