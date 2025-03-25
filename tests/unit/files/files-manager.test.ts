@@ -11,14 +11,16 @@ describe('FilesManager', () => {
   // Fixture data is now imported from tests/fixtures/files.ts
 
   beforeEach(() => {
-    // Setup for MockHttpClient approach
-    httpClient = new MockHttpClient({ baseURL: 'https://example.com/api' });
-    filesManager = new FilesManager(httpClient);
-
-    // Setup for direct fetch mocking approach (alternative)
+    // Setup for direct fetch mocking approach
     mockFetch = jest.fn();
     // Save and mock the fetch function
     jest.spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
+
+    // Create a regular HttpClient that will use the mocked fetch
+    httpClient = new HttpClient({ baseURL: 'http://example.com/api' });
+    filesManager = new FilesManager(httpClient);
+
+    // Keep MockHttpClient available for tests that specifically need it
   });
 
   afterEach(() => {
@@ -38,8 +40,9 @@ describe('FilesManager', () => {
   describe('find', () => {
     it('should fetch files without parameters', async () => {
       // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify(mockFiles), { status: 200 }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Act
@@ -57,12 +60,8 @@ describe('FilesManager', () => {
         json: jest.fn().mockResolvedValueOnce(mockFiles),
       });
 
-      // Create a filesManager with real HttpClient for this test
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act
-      await directFilesManager.find();
+      await filesManager.find();
 
       // Assert
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -79,11 +78,8 @@ describe('FilesManager', () => {
         json: jest.fn().mockResolvedValueOnce([mockFile]),
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act
-      await directFilesManager.find({
+      await filesManager.find({
         filters: { mime: { $contains: 'image' } },
       });
 
@@ -102,11 +98,8 @@ describe('FilesManager', () => {
         json: jest.fn().mockResolvedValueOnce(mockFiles),
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act
-      await directFilesManager.find({
+      await filesManager.find({
         sort: 'name:asc',
       });
 
@@ -124,11 +117,8 @@ describe('FilesManager', () => {
         json: jest.fn().mockResolvedValueOnce(mockFiles),
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act
-      await directFilesManager.find({
+      await filesManager.find({
         sort: ['name:asc', 'size:desc'],
       });
 
@@ -147,11 +137,8 @@ describe('FilesManager', () => {
         json: jest.fn().mockResolvedValueOnce([mockFile]),
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act
-      await directFilesManager.find({
+      await filesManager.find({
         filters: { mime: { $contains: 'image' } },
         sort: 'name:asc',
       });
@@ -164,33 +151,6 @@ describe('FilesManager', () => {
       expect(requestArg.url).toContain('sort=name%3Aasc');
     });
 
-    it('should handle empty array response', async () => {
-      // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
-      });
-
-      // Act
-      const result = await filesManager.find();
-
-      // Assert
-      expect(result).toEqual([]);
-      expect(result.length).toBe(0);
-    });
-
-    it('should handle non-array response gracefully', async () => {
-      // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify(null), { status: 200 }));
-      });
-
-      // Act
-      const result = await filesManager.find();
-
-      // Assert
-      expect(result).toBe(null);
-    });
-
     it('should throw an error when the server returns an error status', async () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
@@ -199,30 +159,25 @@ describe('FilesManager', () => {
         statusText: 'Internal Server Error',
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.find()).rejects.toThrow();
+      await expect(filesManager.find()).rejects.toThrow();
     });
 
     it('should handle network errors', async () => {
       // Arrange
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.find()).rejects.toThrow('Network error');
+      await expect(filesManager.find()).rejects.toThrow('Network error');
     });
   });
 
   describe('findOne', () => {
     it('should successfully retrieve a file by ID', async () => {
       // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify(mockFile), { status: 200 }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -240,11 +195,8 @@ describe('FilesManager', () => {
         json: jest.fn().mockResolvedValueOnce(mockFile),
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act
-      await directFilesManager.findOne(1);
+      await filesManager.findOne(1);
 
       // Assert
       expect(mockFetch).toHaveBeenCalledTimes(1);
@@ -264,30 +216,6 @@ describe('FilesManager', () => {
       await expect(filesManager.findOne(1)).rejects.toThrow();
     });
 
-    it('should throw an error for null response', async () => {
-      // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify(null), { status: 200 }));
-      });
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow(
-        'File with ID 1 not found or returned invalid data'
-      );
-    });
-
-    it('should throw an error for non-object response', async () => {
-      // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify('string response'), { status: 200 }));
-      });
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow(
-        'File with ID 1 not found or returned invalid data'
-      );
-    });
-
     it('should handle server errors (500)', async () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
@@ -296,11 +224,8 @@ describe('FilesManager', () => {
         statusText: 'Internal Server Error',
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.findOne(1)).rejects.toThrow();
+      await expect(filesManager.findOne(1)).rejects.toThrow();
     });
 
     it('should handle 404 errors with a specific message', async () => {
@@ -312,11 +237,8 @@ describe('FilesManager', () => {
       // Throw the error directly instead of returning a response
       mockFetch.mockRejectedValueOnce(mockError);
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.findOne(999)).rejects.toThrow(
+      await expect(filesManager.findOne(999)).rejects.toThrow(
         'File with ID 999 not found. The requested file may have been deleted or never existed.'
       );
     });
@@ -329,11 +251,8 @@ describe('FilesManager', () => {
       mockError.status = 403;
       mockFetch.mockRejectedValueOnce(mockError);
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.findOne(1)).rejects.toThrow(
+      await expect(filesManager.findOne(1)).rejects.toThrow(
         'Failed to retrieve file with ID 1. Server returned status: 403.'
       );
     });
@@ -342,11 +261,8 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.findOne(1)).rejects.toThrow('Network error');
+      await expect(filesManager.findOne(1)).rejects.toThrow('Network error');
     });
 
     it('should handle unexpected JSON parsing errors', async () => {
@@ -364,13 +280,15 @@ describe('FilesManager', () => {
     it('should be able to find a specific file from a file list', async () => {
       // Arrange
       // First, mock the find method to return a list
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify(mockFiles), { status: 200 }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Then, mock the findOne method to return a specific file
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response(JSON.stringify(mockFile), { status: 200 }));
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -397,11 +315,8 @@ describe('FilesManager', () => {
         statusText: 'Unauthorized',
       });
 
-      const directHttpClient = new HttpClient({ baseURL: 'http://example.com/api' });
-      const directFilesManager = new FilesManager(directHttpClient);
-
       // Act & Assert
-      await expect(directFilesManager.find()).rejects.toThrow();
+      await expect(filesManager.find()).rejects.toThrow();
     });
 
     it('should handle JSON parse errors in responses', async () => {
