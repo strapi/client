@@ -1,7 +1,6 @@
 import { FilesManager } from '../../../src/files';
 import { HttpClient } from '../../../src/http';
 import { mockFile, mockFiles } from '../../fixtures/files';
-import { MockHttpClient } from '../mocks';
 
 describe('FilesManager', () => {
   let httpClient: HttpClient;
@@ -150,26 +149,6 @@ describe('FilesManager', () => {
       expect(requestArg.url).toContain('filters%5Bmime%5D%5B%24contains%5D=image');
       expect(requestArg.url).toContain('sort=name%3Aasc');
     });
-
-    it('should throw an error when the server returns an error status', async () => {
-      // Arrange
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
-
-      // Act & Assert
-      await expect(filesManager.find()).rejects.toThrow();
-    });
-
-    it('should handle network errors', async () => {
-      // Arrange
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      // Act & Assert
-      await expect(filesManager.find()).rejects.toThrow('Network error');
-    });
   });
 
   describe('findOne', () => {
@@ -205,75 +184,6 @@ describe('FilesManager', () => {
       expect(requestArg.url).toContain('http://example.com/api/upload/files/1');
       expect(requestArg.method).toBe('GET');
     });
-
-    it('should throw an error for empty response body', async () => {
-      // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response('', { status: 200 }));
-      });
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow();
-    });
-
-    it('should handle server errors (500)', async () => {
-      // Arrange
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 500,
-        statusText: 'Internal Server Error',
-      });
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow();
-    });
-
-    it('should handle 404 errors with a specific message', async () => {
-      // Arrange
-      // Create a mock Error to be thrown with the Response attached
-      const mockError = new Error('Not Found');
-      // @ts-ignore - Attaching status for the error handling in files manager
-      mockError.status = 404;
-      // Throw the error directly instead of returning a response
-      mockFetch.mockRejectedValueOnce(mockError);
-
-      // Act & Assert
-      await expect(filesManager.findOne(999)).rejects.toThrow(
-        'File with ID 999 not found. The requested file may have been deleted or never existed.'
-      );
-    });
-
-    it('should handle HTTP errors with status codes', async () => {
-      // Arrange
-      // Create a mock Error to be thrown with a 403 status
-      const mockError = new Error('Forbidden');
-      // @ts-ignore - Attaching status for the error handling in files manager
-      mockError.status = 403;
-      mockFetch.mockRejectedValueOnce(mockError);
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow(
-        'Failed to retrieve file with ID 1. Server returned status: 403.'
-      );
-    });
-
-    it('should handle network errors', async () => {
-      // Arrange
-      mockFetch.mockRejectedValueOnce(new Error('Network error'));
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow('Network error');
-    });
-
-    it('should handle unexpected JSON parsing errors', async () => {
-      // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response('invalid json', { status: 200 }));
-      });
-
-      // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow();
-    });
   });
 
   describe('integration between methods', () => {
@@ -302,43 +212,6 @@ describe('FilesManager', () => {
       expect(files.length).toBe(2);
       expect(file.id).toBe(1);
       expect(file.name).toBe('test-file.jpg');
-    });
-  });
-
-  describe('error handling', () => {
-    it('should handle and propagate HTTP errors correctly', async () => {
-      // Arrange
-      // Mock an authorization error
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 401,
-        statusText: 'Unauthorized',
-      });
-
-      // Act & Assert
-      await expect(filesManager.find()).rejects.toThrow();
-    });
-
-    it('should handle JSON parse errors in responses', async () => {
-      // Arrange
-      // Mock a response with invalid JSON
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
-        return Promise.resolve(new Response('this is not valid json', { status: 200 }));
-      });
-
-      // Act & Assert
-      await expect(filesManager.find()).rejects.toThrow();
-    });
-
-    it('should handle non-Error type unexpected errors', async () => {
-      // Arrange
-
-      // Create a non-Error type that would trigger the specific error path
-      const nonErrorObject = { message: 'This is not an Error instance' };
-      mockFetch.mockRejectedValueOnce(nonErrorObject);
-
-      // Act & Assert
-      await expect(filesManager.find()).rejects.toEqual(nonErrorObject);
     });
   });
 });

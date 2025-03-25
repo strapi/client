@@ -59,30 +59,18 @@ export class FilesManager {
   async find(queryParams?: FileQueryParams): Promise<FileListResponse> {
     debug('finding files');
 
-    try {
-      let url = fileApiPrefix;
+    let url = fileApiPrefix;
 
-      if (queryParams) {
-        url = URLHelper.appendQueryParams(url, queryParams);
-      }
-
-      const response = await this._httpClient.get(url);
-      const json = await response.json();
-
-      debug('found %o files', Number(json?.length));
-
-      return json;
-    } catch (error) {
-      // Handle validation errors which are already Error instances
-      if (error instanceof Error) {
-        debug('error finding files: %o', error.message);
-        throw error;
-      }
-
-      // Pass through HTTP errors from the HttpClient
-      debug('unexpected error finding files: %o', error);
-      throw error;
+    if (queryParams) {
+      url = URLHelper.appendQueryParams(url, queryParams);
     }
+
+    const response = await this._httpClient.get(url);
+    const json = await response.json();
+
+    debug('found %o files', Number(json?.length));
+
+    return json;
   }
 
   /**
@@ -92,7 +80,6 @@ export class FilesManager {
    * @returns A promise that resolves to a single file object.
    *
    * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
-   * @throws {Error} if the file ID is invalid or the file does not exist.
    *
    * @example
    * ```typescript
@@ -108,32 +95,10 @@ export class FilesManager {
 
     const url = `${fileApiPrefix}/${fileId}`;
 
-    try {
-      const response = await this._httpClient.get(url);
-      const json = await response.json();
+    const response = await this._httpClient.get(url);
+    debug('found file with ID %o', fileId);
 
-      debug('found file with ID %o', fileId);
-
-      return json;
-    } catch (error) {
-      debug('error finding file with ID %o: %o', fileId, error);
-
-      // Handle 404 errors with a more specific message
-      if ((error as Response)?.status === 404) {
-        throw new Error(
-          `File with ID ${fileId} not found. The requested file may have been deleted or never existed.`
-        );
-      }
-
-      // For other HTTP errors, provide context about the operation
-      if ((error as Response)?.status) {
-        throw new Error(
-          `Failed to retrieve file with ID ${fileId}. Server returned status: ${(error as Response).status}.`
-        );
-      }
-
-      // Rethrow the original error if it's not an HTTP response or already an Error
-      throw error;
-    }
+    const json = await response.json();
+    return json;
   }
 }
