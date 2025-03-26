@@ -1,11 +1,10 @@
 import createDebug from 'debug';
 
-import { HTTPNotFoundError } from '../errors';
 import { HttpClient } from '../http';
 import { URLHelper } from '../utilities';
 
 import { FILE_API_PREFIX } from './constants';
-import { FileNotFoundError } from './errors';
+import { FileErrorMapper } from './errors';
 import { FileQueryParams, FileListResponse, FileResponse } from './types';
 
 const debug = createDebug('strapi:files');
@@ -55,9 +54,10 @@ export class FilesManager {
       },
       // Error handler
       (error) => {
-        // Check if this is a Not Found error and we have a fileId
-        if (error instanceof HTTPNotFoundError && fileId !== undefined) {
-          throw new FileNotFoundError(fileId, error);
+        const mapper = FileErrorMapper.createMapper(fileId);
+        const mappedError = mapper(error as Error);
+        if (mappedError) {
+          throw mappedError;
         }
 
         // For other errors, rethrow the original error
@@ -74,6 +74,7 @@ export class FilesManager {
    * @param queryParams - Optional parameters to filter or sort the results.
    * @returns A promise that resolves to an array of file objects.
    *
+   * @throws {FileForbiddenError} if the user does not have permission to list files.
    * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
    *
    * @example
@@ -98,7 +99,8 @@ export class FilesManager {
         url = URLHelper.appendQueryParams(url, queryParams);
       }
 
-      const response = await this._httpClient.get(url);
+      const client = this.createFileHttpClient();
+      const response = await client.get(url);
       const json = await response.json();
 
       debug('found %o files', Number(json?.length));

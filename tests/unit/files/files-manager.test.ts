@@ -1,5 +1,11 @@
-import { HTTPNotFoundError } from '../../../src/errors';
-import { FilesManager, FileNotFoundError, FileError, FileForbiddenError } from '../../../src/files';
+import { HTTPNotFoundError, HTTPForbiddenError } from '../../../src/errors';
+import {
+  FilesManager,
+  FileNotFoundError,
+  FileError,
+  FileForbiddenError,
+  FileErrorMapper,
+} from '../../../src/files';
 import { HttpClient } from '../../../src/http';
 import { mockFile, mockFiles } from '../../fixtures/files';
 import { MockHttpClient } from '../mocks';
@@ -364,7 +370,12 @@ describe('FilesManager', () => {
       // Arrange & Act
       const mockRequest = new Request('http://example.com/api/upload/files');
       const mockResponse = new Response('Forbidden', { status: 403 });
-      const forbiddenError = new FileForbiddenError(mockResponse, mockRequest);
+
+      // Create an HTTPForbiddenError first (simulating what would happen in real code)
+      const httpForbiddenError = new HTTPForbiddenError(mockResponse, mockRequest);
+
+      // Now create the FileForbiddenError with the HTTPForbiddenError
+      const forbiddenError = new FileForbiddenError(httpForbiddenError);
 
       // Assert
       expect(forbiddenError).toBeInstanceOf(FileForbiddenError);
@@ -394,6 +405,66 @@ describe('FilesManager', () => {
       // Act & Assert
       await expect(filesManager.find()).rejects.toEqual(nonErrorObject);
     });
+
+    it('should handle FileForbiddenError creation with and without fileId', () => {
+      // Arrange
+      const mockRequest = new Request('http://example.com/api/upload/files');
+      const mockResponse = new Response('Forbidden', { status: 403 });
+      const httpForbiddenError = new HTTPForbiddenError(mockResponse, mockRequest);
+
+      // Act - Create error without fileId
+      const generalForbiddenError = new FileForbiddenError(httpForbiddenError);
+
+      // Act - Create error with fileId
+      const fileIdForbiddenError = new FileForbiddenError(httpForbiddenError, 42);
+
+      // Assert - General error
+      expect(generalForbiddenError).toBeInstanceOf(FileForbiddenError);
+      expect(generalForbiddenError.name).toBe('FileForbiddenError');
+      expect(generalForbiddenError.fileId).toBeUndefined();
+      expect(generalForbiddenError.message).toContain('Access to files is forbidden');
+
+      // Assert - File-specific error
+      expect(fileIdForbiddenError).toBeInstanceOf(FileForbiddenError);
+      expect(fileIdForbiddenError.fileId).toBe(42);
+      expect(fileIdForbiddenError.message).toContain('Access to file with ID 42 is forbidden');
+    });
+
+    it('should properly map errors in FileErrorMapper', () => {
+      // Arrange
+      const mockRequest = new Request('http://example.com/api/upload/files/123');
+      const notFoundResponse = new Response('Not Found', { status: 404 });
+      const forbiddenResponse = new Response('Forbidden', { status: 403 });
+
+      const httpNotFoundError = new HTTPNotFoundError(notFoundResponse, mockRequest);
+      const httpForbiddenError = new HTTPForbiddenError(forbiddenResponse, mockRequest);
+
+      // Act - Create mappers with and without fileId
+      const withIdMapper = FileErrorMapper.createMapper(123);
+      const withoutIdMapper = FileErrorMapper.createMapper();
+
+      // Assert - NotFound error with fileId
+      const mappedNotFoundWithId = withIdMapper(httpNotFoundError);
+      expect(mappedNotFoundWithId).not.toBeNull();
+      expect(mappedNotFoundWithId).toBeInstanceOf(FileNotFoundError);
+      expect((mappedNotFoundWithId as FileNotFoundError).fileId).toBe(123);
+
+      // Assert - NotFound error without fileId
+      const mappedNotFoundWithoutId = withoutIdMapper(httpNotFoundError);
+      expect(mappedNotFoundWithoutId).toBeNull();
+
+      // Assert - Forbidden error with fileId
+      const mappedForbiddenWithId = withIdMapper(httpForbiddenError);
+      expect(mappedForbiddenWithId).not.toBeNull();
+      expect(mappedForbiddenWithId).toBeInstanceOf(FileForbiddenError);
+      expect((mappedForbiddenWithId as FileForbiddenError).fileId).toBe(123);
+
+      // Assert - Forbidden error without fileId
+      const mappedForbiddenWithoutId = withoutIdMapper(httpForbiddenError);
+      expect(mappedForbiddenWithoutId).not.toBeNull();
+      expect(mappedForbiddenWithoutId).toBeInstanceOf(FileForbiddenError);
+      expect((mappedForbiddenWithoutId as FileForbiddenError).fileId).toBeUndefined();
+    });
   });
 
   describe('error handling with interceptors', () => {
@@ -421,24 +492,6 @@ describe('FilesManager', () => {
       // Verify the interceptor was added to the client
       const createdClient = createSpy.mock.results[0]?.value;
       expect(createdClient?.interceptors.response).toBeDefined();
-    });
-
-    it('should pass undefined fileId to createFileHttpClient in find method', async () => {
-      // Arrange
-      // Create spy on the private method using any
-      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
-      });
-
-      // Act
-      await filesManager.find();
-
-      // Assert
-      // For the find method, we should not pass a fileId to createFileHttpClient
-      expect(createSpy).not.toHaveBeenCalled();
     });
 
     it('should pass fileId to createFileHttpClient in findOne method', async () => {
