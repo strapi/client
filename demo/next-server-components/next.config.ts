@@ -13,6 +13,18 @@ const nextConfig: NextConfig = {
       hmrRefreshes: true,
     },
   },
+
+  // Allow images from Strapi server
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+        port: '1337',
+        pathname: '/**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
