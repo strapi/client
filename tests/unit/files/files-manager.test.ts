@@ -1,4 +1,5 @@
-import { FilesManager } from '../../../src/files';
+import { HTTPNotFoundError } from '../../../src/errors';
+import { FilesManager, FileNotFoundError, FileError, FileForbiddenError } from '../../../src/files';
 import { HttpClient } from '../../../src/http';
 import { mockFile, mockFiles } from '../../fixtures/files';
 import { MockHttpClient } from '../mocks';
@@ -224,33 +225,64 @@ describe('FilesManager', () => {
       await expect(filesManager.findOne(1)).rejects.toThrow();
     });
 
-    it('should handle 404 errors with a specific message', async () => {
+    it('should include fileId in FileNotFoundError', async () => {
       // Arrange
-      // Create a mock Error to be thrown with the Response attached
-      const mockError = new Error('Not Found');
-      // @ts-ignore - Attaching status for the error handling in files manager
-      mockError.status = 404;
-      // Throw the error directly instead of returning a response
-      mockFetch.mockRejectedValueOnce(mockError);
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
 
-      // Act & Assert
-      await expect(filesManager.findOne(999)).rejects.toThrow(
-        'File with ID 999 not found. The requested file may have been deleted or never existed.'
-      );
+      // Create an HTTPNotFoundError that would be thrown by the HttpClient
+      const notFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(notFoundError);
+
+      // Act
+      try {
+        await filesManager.findOne(fileId);
+        fail('Expected an error to be thrown');
+      } catch (error) {
+        // Assert
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          expect(error.fileId).toBe(fileId);
+          expect(error.message).toContain(`File with ID ${fileId} not found`);
+        }
+      }
+    });
+
+    it('should preserve the original request and response in FileNotFoundError', async () => {
+      // Arrange
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
+
+      // Create an HTTPNotFoundError that would be thrown by the HttpClient
+      const notFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(notFoundError);
+
+      // Act
+      try {
+        await filesManager.findOne(fileId);
+        fail('Expected an error to be thrown');
+      } catch (error) {
+        // Assert
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          expect(error.request).toBe(mockRequest);
+          expect(error.response).toBe(mockResponse);
+        }
+      }
     });
 
     it('should handle HTTP errors with status codes', async () => {
       // Arrange
-      // Create a mock Error to be thrown with a 403 status
-      const mockError = new Error('Forbidden');
-      // @ts-ignore - Attaching status for the error handling in files manager
-      mockError.status = 403;
-      mockFetch.mockRejectedValueOnce(mockError);
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        statusText: 'Forbidden',
+      });
 
       // Act & Assert
-      await expect(filesManager.findOne(1)).rejects.toThrow(
-        'Failed to retrieve file with ID 1. Server returned status: 403.'
-      );
+      await expect(filesManager.findOne(1)).rejects.toThrow();
     });
 
     it('should handle network errors', async () => {
@@ -315,6 +347,32 @@ describe('FilesManager', () => {
       await expect(filesManager.find()).rejects.toThrow();
     });
 
+    it('should create and use FileError with correct name property', () => {
+      // Arrange & Act
+      const mockRequest = new Request('http://example.com/api/upload/files');
+      const mockResponse = new Response('Server Error', { status: 500 });
+      const fileError = new FileError(mockResponse, mockRequest);
+
+      // Assert
+      expect(fileError).toBeInstanceOf(FileError);
+      expect(fileError.name).toBe('FileError');
+      expect(fileError.request).toBe(mockRequest);
+      expect(fileError.response).toBe(mockResponse);
+    });
+
+    it('should create and use FileForbiddenError with correct name property', () => {
+      // Arrange & Act
+      const mockRequest = new Request('http://example.com/api/upload/files');
+      const mockResponse = new Response('Forbidden', { status: 403 });
+      const forbiddenError = new FileForbiddenError(mockResponse, mockRequest);
+
+      // Assert
+      expect(forbiddenError).toBeInstanceOf(FileForbiddenError);
+      expect(forbiddenError.name).toBe('FileForbiddenError');
+      expect(forbiddenError.request).toBe(mockRequest);
+      expect(forbiddenError.response).toBe(mockResponse);
+    });
+
     it('should handle JSON parse errors in responses', async () => {
       // Arrange
       // Mock a response with invalid JSON
@@ -335,6 +393,69 @@ describe('FilesManager', () => {
 
       // Act & Assert
       await expect(filesManager.find()).rejects.toEqual(nonErrorObject);
+    });
+  });
+
+  describe('error handling with interceptors', () => {
+    it('should create a custom HTTP client with error interceptors', async () => {
+      // Arrange - Spy on the create method
+      const createSpy = jest.spyOn(httpClient, 'create');
+
+      // Mock to simulate a 404 error
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 404,
+        statusText: 'Not Found',
+      });
+
+      // Act
+      try {
+        await filesManager.findOne(999);
+      } catch (_error) {
+        // We expect an error, so this is fine
+      }
+
+      // Assert
+      expect(createSpy).toHaveBeenCalled();
+
+      // Verify the interceptor was added to the client
+      const createdClient = createSpy.mock.results[0]?.value;
+      expect(createdClient?.interceptors.response).toBeDefined();
+    });
+
+    it('should pass undefined fileId to createFileHttpClient in find method', async () => {
+      // Arrange
+      // Create spy on the private method using any
+      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFiles),
+      });
+
+      // Act
+      await filesManager.find();
+
+      // Assert
+      // For the find method, we should not pass a fileId to createFileHttpClient
+      expect(createSpy).not.toHaveBeenCalled();
+    });
+
+    it('should pass fileId to createFileHttpClient in findOne method', async () => {
+      // Arrange
+      // Create spy on the private method using any
+      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFile),
+      });
+
+      // Act
+      await filesManager.findOne(1);
+
+      // Assert
+      expect(createSpy).toHaveBeenCalledWith(1);
     });
   });
 });

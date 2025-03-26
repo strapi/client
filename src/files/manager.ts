@@ -1,9 +1,11 @@
 import createDebug from 'debug';
 
+import { HTTPNotFoundError } from '../errors';
 import { HttpClient } from '../http';
 import { URLHelper } from '../utilities';
 
 import { FILE_API_PREFIX } from './constants';
+import { FileNotFoundError } from './errors';
 import { FileQueryParams, FileListResponse, FileResponse } from './types';
 
 const debug = createDebug('strapi:files');
@@ -34,6 +36,36 @@ export class FilesManager {
     this._httpClient = httpClient;
 
     debug('initialized files manager');
+  }
+
+  /**
+   * Creates an HTTP client with file-specific error interceptors.
+   *
+   * @param fileId - Optional file ID to include in error messages.
+   * @returns A new HttpClient instance with file-specific error handling.
+   */
+  private createFileHttpClient(fileId?: number): HttpClient {
+    const client = this._httpClient.create();
+
+    // Add response interceptor to transform generic HTTP errors into file-specific errors
+    client.interceptors.response.use(
+      // Success handler
+      ({ request, response }) => {
+        return { request, response };
+      },
+      // Error handler
+      (error) => {
+        // Check if this is a Not Found error and we have a fileId
+        if (error instanceof HTTPNotFoundError && fileId !== undefined) {
+          throw new FileNotFoundError(fileId, error);
+        }
+
+        // For other errors, rethrow the original error
+        throw error;
+      }
+    );
+
+    return client;
   }
 
   /**
@@ -73,14 +105,7 @@ export class FilesManager {
 
       return json;
     } catch (error) {
-      // Handle validation errors which are already Error instances
-      if (error instanceof Error) {
-        debug('error finding files: %o', error.message);
-        throw error;
-      }
-
-      // Pass through HTTP errors from the HttpClient
-      debug('unexpected error finding files: %o', error);
+      debug('error finding files: %o', error);
       throw error;
     }
   }
@@ -91,8 +116,8 @@ export class FilesManager {
    * @param fileId - The numeric identifier of the file to retrieve.
    * @returns A promise that resolves to a single file object.
    *
+   * @throws {FileNotFoundError} if the file with the specified ID does not exist.
    * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
-   * @throws {Error} if the file ID is invalid or the file does not exist.
    *
    * @example
    * ```typescript
@@ -107,9 +132,11 @@ export class FilesManager {
     debug('finding file with ID %o', fileId);
 
     const url = `${FILE_API_PREFIX}/${fileId}`;
+    const client = this.createFileHttpClient(fileId);
 
     try {
-      const response = await this._httpClient.get(url);
+      const response = await client.get(url);
+
       const json = await response.json();
 
       debug('found file with ID %o', fileId);
@@ -117,22 +144,6 @@ export class FilesManager {
       return json;
     } catch (error) {
       debug('error finding file with ID %o: %o', fileId, error);
-
-      // Handle 404 errors with a more specific message
-      if ((error as Response)?.status === 404) {
-        throw new Error(
-          `File with ID ${fileId} not found. The requested file may have been deleted or never existed.`
-        );
-      }
-
-      // For other HTTP errors, provide context about the operation
-      if ((error as Response)?.status) {
-        throw new Error(
-          `Failed to retrieve file with ID ${fileId}. Server returned status: ${(error as Response).status}.`
-        );
-      }
-
-      // Rethrow the original error if it's not an HTTP response or already an Error
       throw error;
     }
   }
