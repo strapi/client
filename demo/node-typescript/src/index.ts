@@ -9,113 +9,151 @@ console.log('Running with api token ' + api_token);
 // Create the Strapi client instance
 const client = strapi({ baseURL: 'http://localhost:1337/api', auth: api_token });
 
+// Type definitions based on the actual response structure
+interface CategoryImage {
+  id: number;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number;
+  height: number;
+  formats: Record<string, unknown>;
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl: string | null;
+  provider: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  image?: CategoryImage;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+}
+
+interface CategoryResponse {
+  data: Category[];
+  meta: {
+    pagination: {
+      page: number;
+      pageSize: number;
+      pageCount: number;
+      total: number;
+    };
+  };
+}
+
+interface FileAttributes {
+  id: number;
+  name: string;
+  alternativeText: string | null;
+  caption: string | null;
+  width: number;
+  height: number;
+  formats: Record<string, unknown>;
+  hash: string;
+  ext: string;
+  mime: string;
+  size: number;
+  url: string;
+  previewUrl: string | null;
+  provider: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 async function runDemo() {
-  console.log('=== Collection Type Demo ===');
+  await demonstrateBasicCategoryFunctionality();
+  await demonstrateCategoryImageInteractions();
+  await demonstrateDirectFileOperations();
+}
+
+// Demonstrate basic category functionality
+async function demonstrateBasicCategoryFunctionality() {
+  console.log('\n=== Basic Category Data ===\n');
 
   // Create a collection type query manager for the categories
   const categories = client.collection('categories');
 
   // Fetch the list of all categories
-  const docs = await categories.find();
+  const categoryDocs = (await categories.find()) as unknown as CategoryResponse;
 
-  console.dir(docs, { depth: null });
+  console.log(`Found ${categoryDocs.data.length} categories:`);
+  categoryDocs.data.forEach((category) => {
+    console.log(`- ${category.name} (${category.slug})`);
+  });
+}
 
-  // Running the files demo if the --files flag is provided
-  // This way we can run either just the basic demo or include the files demo
-  console.log('\n\n=== Files Demo ===');
+// Demonstrate category image interactions
+async function demonstrateCategoryImageInteractions() {
+  console.log('\n=== Categories with their images ===\n');
 
-  // Find all files
-  console.log('\n1. Finding all files:');
-  try {
-    const allFiles = await client.files.find();
-    console.log(`Found ${allFiles.length} files`);
-    console.log('Files:');
-    allFiles.forEach((file) => {
-      console.log(`- ${file.name} (${file.mime}, ${formatFileSize(file.size)})`);
-    });
-  } catch (error) {
-    console.error('Error finding files:', error);
-  }
+  const categories = client.collection('categories');
 
-  // Find files with filtering
-  console.log('\n2. Finding image files:');
-  try {
-    const imageFiles = await client.files.find({
-      filters: {
-        mime: { $contains: 'image' }, // Only get image files
-      },
-      sort: ['name:asc'], // Sort by name in ascending order
-    });
-    console.log(`Found ${imageFiles.length} image files`);
-    console.log('Image files:');
-    imageFiles.forEach((file) => {
-      console.log(`- ${file.name} (${file.mime}, ${formatFileSize(file.size)})`);
-    });
-  } catch (error) {
-    console.error('Error finding image files:', error);
-  }
+  // Fetch all categories with their related images
+  const result = (await categories.find({
+    populate: ['image'],
+  })) as unknown as CategoryResponse;
 
-  // Find a specific file (if files exist)
-  console.log('\n3. Finding a specific file by ID:');
-  try {
-    const allFiles = await client.files.find();
-    if (allFiles.length > 0) {
-      const fileId = allFiles[0].id;
-      console.log(`Getting file with ID ${fileId}`);
+  for (const category of result.data) {
+    console.log(`Category: ${category.name}`);
 
-      const file = await client.files.findOne(fileId);
-      console.log('File details:');
-      console.log(`- Name: ${file.name}`);
-      console.log(`- MIME: ${file.mime}`);
-      console.log(`- Size: ${formatFileSize(file.size)}`);
-      console.log(`- URL: ${file.url}`);
-
-      if (file.formats) {
-        console.log('- Formats:');
-        Object.entries(file.formats).forEach(([key, format]) => {
-          // @ts-ignore - format has dynamic structure
-          console.log(`  * ${key}: ${format.url} (${format.width}x${format.height})`);
-        });
-      }
+    // Check if the category has an image
+    if (category.image) {
+      console.log(`  Image: ${category.image.name}`);
+      console.log(`  Format: ${category.image.ext}`);
+      console.log(`  Size: ${formatFileSize(category.image.size)}`);
+      console.log(`  URL: ${category.image.url}`);
     } else {
-      console.log('No files available to retrieve by ID');
+      console.log('  No image associated with this category');
     }
-  } catch (error) {
-    console.error('Error finding specific file:', error);
   }
+}
 
-  // Test error handling for invalid fileId
-  console.log('\n4. Testing invalid file ID error handling:');
-  try {
-    console.log('Attempting to get file with invalid ID (0):');
-    await client.files.findOne(0);
-  } catch (error: any) {
-    console.error('Error as expected:', error.message);
-  }
+// Demonstrate direct file operations
+async function demonstrateDirectFileOperations() {
+  console.log('\n=== Direct file queries ===\n');
 
-  try {
-    console.log('Attempting to get file with non-existent ID (999999):');
-    await client.files.findOne(999999);
-  } catch (error: any) {
-    console.error('Error as expected:', error.message);
-  }
+  const categories = client.collection('categories');
 
-  // Test error handling for invalid query parameters
-  console.log('\n5. Testing invalid query parameters error handling:');
-  try {
-    console.log('Attempting to find files with invalid filters:');
-    // @ts-ignore - deliberately passing invalid type for testing
-    await client.files.find({ filters: 'invalid' });
-  } catch (error: any) {
-    console.error('Error as expected:', error.message);
-  }
+  // Get a specific category using find with a filter (matching the JS example)
+  const techCategoryResult = (await categories.find({
+    filters: {
+      slug: {
+        $eq: 'tech',
+      },
+    },
+    populate: ['image'],
+  })) as unknown as CategoryResponse;
 
-  try {
-    console.log('Attempting to find files with invalid sort:');
-    // @ts-ignore - deliberately passing invalid type for testing
-    await client.files.find({ sort: 123 });
-  } catch (error: any) {
-    console.error('Error as expected:', error.message);
+  if (techCategoryResult.data && techCategoryResult.data.length > 0) {
+    const categoryData = techCategoryResult.data[0];
+    console.log(`Working with category: ${categoryData.name} (ID: ${categoryData.id})`);
+
+    // Query files directly using the files API
+    if (categoryData.image) {
+      const imageId = categoryData.image.id;
+
+      // Get the specific file by ID
+      const fileInfo = (await client.files.findOne(imageId)) as unknown as FileAttributes;
+      console.log('\nFile details:');
+      console.log(`  Name: ${fileInfo.name}`);
+      console.log(`  Alternative Text: ${fileInfo.alternativeText || 'None'}`);
+      console.log(`  Caption: ${fileInfo.caption || 'None'}`);
+      console.log(`  Width: ${fileInfo.width}px`);
+      console.log(`  Height: ${fileInfo.height}px`);
+      console.log(`  Format: ${fileInfo.ext}`);
+      console.log(`  Size: ${formatFileSize(fileInfo.size)}`);
+      console.log(`  URL: ${fileInfo.url}`);
+    }
   }
 }
 
