@@ -451,7 +451,7 @@ describe('FilesManager', () => {
 
       // Assert - NotFound error without fileId
       const mappedNotFoundWithoutId = withoutIdMapper(httpNotFoundError);
-      expect(mappedNotFoundWithoutId).toBeNull();
+      expect(mappedNotFoundWithoutId).toBeInstanceOf(HTTPNotFoundError);
 
       // Assert - Forbidden error with fileId
       const mappedForbiddenWithId = withIdMapper(httpForbiddenError);
@@ -468,30 +468,48 @@ describe('FilesManager', () => {
   });
 
   describe('error handling with interceptors', () => {
-    it('should create a custom HTTP client with error interceptors', async () => {
+    it('should properly add a error mapping interceptor to the HTTP client', async () => {
       // Arrange - Spy on the create method
       const createSpy = jest.spyOn(httpClient, 'create');
 
-      // Mock to simulate a 404 error
-      mockFetch.mockResolvedValueOnce({
-        ok: false,
-        status: 404,
-        statusText: 'Not Found',
-      });
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
+      // Create an HTTPNotFoundError that would be thrown by the HttpClient
+      const httpNotFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+
+      mockFetch.mockRejectedValueOnce(httpNotFoundError);
 
       // Act
       try {
-        await filesManager.findOne(999);
-      } catch (_error) {
-        // We expect an error, so this is fine
+        await filesManager.findOne(fileId);
+      } catch (error) {
+        // Expected to throw FileNotFoundError
+        expect(error).toBeInstanceOf(FileNotFoundError);
       }
 
       // Assert
       expect(createSpy).toHaveBeenCalled();
 
-      // Verify the interceptor was added to the client
       const createdClient = createSpy.mock.results[0]?.value;
       expect(createdClient?.interceptors.response).toBeDefined();
+
+      const responseInterceptors = (createdClient?.interceptors.response as any)._handlers;
+      expect(responseInterceptors).toBeDefined();
+      expect(responseInterceptors.length).toBeGreaterThan(0);
+
+      const interceptorFn = responseInterceptors[0].rejected;
+      expect(interceptorFn).toBeDefined();
+
+      // Verify the interceptor correctly maps HTTP errors to File errors
+      try {
+        await interceptorFn(httpNotFoundError);
+      } catch (error) {
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          expect(error.fileId).toBe(fileId);
+        }
+      }
     });
 
     it('should pass fileId to createFileHttpClient in findOne method', async () => {

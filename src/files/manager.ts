@@ -45,22 +45,19 @@ export class FilesManager {
    */
   private createFileHttpClient(fileId?: number): HttpClient {
     const client = this._httpClient.create();
+    const mapper = FileErrorMapper.createMapper(fileId);
 
     // Add response interceptor to transform generic HTTP errors into file-specific errors
     client.interceptors.response.use(
       // Success handler
-      ({ request, response }) => {
-        return { request, response };
-      },
+      undefined,
       // Error handler
       (error) => {
-        const mapper = FileErrorMapper.createMapper(fileId);
-        const mappedError = mapper(error as Error);
-        if (mappedError) {
-          throw mappedError;
+        if (error instanceof Error) {
+          throw mapper(error);
         }
 
-        // For other errors, rethrow the original error
+        // For other errors types, re-throw the original value
         throw error;
       }
     );

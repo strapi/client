@@ -56,16 +56,16 @@ export class FileErrorMapper {
    * @returns A function that maps HTTP errors to domain-specific file errors.
    */
   static createMapper(fileId?: number) {
-    return (error: Error): Error | null => {
+    return (error: Error): Error => {
       if (error instanceof HTTPNotFoundError) {
-        return fileId !== undefined ? new FileNotFoundError(fileId, error) : null;
+        return fileId !== undefined ? new FileNotFoundError(fileId, error) : error;
       }
 
       if (error instanceof HTTPForbiddenError) {
         return new FileForbiddenError(error, fileId);
       }
 
-      return null;
+      return error;
     };
   }
 }

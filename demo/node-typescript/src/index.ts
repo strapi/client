@@ -76,14 +76,11 @@ async function runDemo() {
   await demonstrateDirectFileOperations();
 }
 
-// Demonstrate basic category functionality
 async function demonstrateBasicCategoryFunctionality() {
   console.log('\n=== Basic Category Data ===\n');
 
-  // Create a collection type query manager for the categories
   const categories = client.collection('categories');
 
-  // Fetch the list of all categories
   const categoryDocs = (await categories.find()) as unknown as CategoryResponse;
 
   console.log(`Found ${categoryDocs.data.length} categories:`);
@@ -92,7 +89,6 @@ async function demonstrateBasicCategoryFunctionality() {
   });
 }
 
-// Demonstrate category image interactions
 async function demonstrateCategoryImageInteractions() {
   console.log('\n=== Categories with their images ===\n');
 
@@ -118,7 +114,6 @@ async function demonstrateCategoryImageInteractions() {
   }
 }
 
-// Demonstrate direct file operations
 async function demonstrateDirectFileOperations() {
   console.log('\n=== Direct file queries ===\n');
 
