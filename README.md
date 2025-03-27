@@ -209,6 +209,7 @@ The `files` property provides access to the Strapi Media Library through the Upl
 
 - `find(params?: FileQueryParams): Promise<FileListResponse>` - Retrieves a list of file metadata based on optional query parameters
 - `findOne(fileId: number): Promise<FileResponse>` - Retrieves the metadata for a single file by its ID
+- `update(fileId: number, fileInfo: FileUpdateData): Promise<FileResponse>` - Updates metadata for an existing file
 
 #### Example: Finding Files
 
@@ -248,6 +249,26 @@ const file = await client.files.findOne(1);
 console.log(file.name); // The file name
 console.log(file.url); // The file URL
 console.log(file.mime); // The file MIME type
+```
+
+#### Example: Updating File Metadata
+
+```typescript
+// Initialize the client
+const client = strapi({
+  baseURL: 'http://localhost:1337/api',
+  auth: 'your-api-token',
+});
+
+// Update file metadata
+const updatedFile = await client.files.update(1, {
+  name: 'New file name',
+  alternativeText: 'Descriptive alt text for accessibility',
+  caption: 'A caption for the file',
+});
+
+console.log(updatedFile.name); // Updated file name
+console.log(updatedFile.alternativeText); // Updated alt text
 ```
 
 ## 🐛 Debug

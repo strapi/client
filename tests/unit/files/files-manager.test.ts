@@ -6,6 +6,7 @@ import {
   FileForbiddenError,
   FileErrorMapper,
 } from '../../../src/files';
+import { FileUpdateData } from '../../../src/files/types';
 import { HttpClient } from '../../../src/http';
 import { mockFile, mockFiles } from '../../fixtures/files';
 import { MockHttpClient } from '../mocks';
@@ -524,6 +525,106 @@ describe('FilesManager', () => {
 
       // Act
       await filesManager.findOne(1);
+
+      // Assert
+      expect(createSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('update', () => {
+    it('should successfully update a file with valid data', async () => {
+      // Arrange - Prepare update data
+      const updateData: FileUpdateData = {
+        name: 'Updated File Name',
+        alternativeText: 'Updated alt text',
+        caption: 'Updated caption',
+      };
+
+      // Arrange - Mock the successful response with updated file data
+      const updatedFile = {
+        ...mockFile,
+        name: updateData.name,
+        alternativeText: updateData.alternativeText,
+        caption: updateData.caption,
+        updatedAt: '2023-01-02T00:00:00.000Z',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(updatedFile),
+      });
+
+      // Act
+      const result = await filesManager.update(1, updateData);
+
+      // Assert - Verify the result
+      expect(result).toEqual(updatedFile);
+      expect(result.name).toBe(updateData.name);
+      expect(result.alternativeText).toBe(updateData.alternativeText);
+      expect(result.caption).toBe(updateData.caption);
+
+      // Verify the request
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const requestArg = mockFetch.mock.calls[0][0];
+
+      // Check that the URL and method are correct
+      expect(requestArg.url).toBe('http://example.com/api/upload?id=1');
+      expect(requestArg.method).toBe('POST');
+    });
+
+    it('should throw an error when updating a non-existent file', async () => {
+      // Arrange - Create a mock HTTP 404 response for a non-existent file
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload?id=${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
+
+      // Arrange - Create an HTTPNotFoundError that would be thrown by the HttpClient
+      const httpNotFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(httpNotFoundError);
+
+      // Act & Assert
+      try {
+        await filesManager.update(fileId, { name: 'New Name' });
+        fail('Expected an error to be thrown');
+      } catch (error) {
+        // Check that the error is properly mapped to a FileNotFoundError
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          // Verify the error contains the file ID and a relevant message
+          expect(error.fileId).toBe(fileId);
+          expect(error.message).toContain(`File with ID ${fileId} not found`);
+          // Verify the original request and response are preserved
+          expect(error.request).toBe(mockRequest);
+          expect(error.response).toBe(mockResponse);
+        }
+      }
+    });
+
+    it('should handle server-side validation errors', async () => {
+      // Arrange
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+        json: jest.fn().mockRejectedValueOnce(new Error('Bad request')),
+      });
+
+      // Act & Assert
+      await expect(filesManager.update(1, { name: 'New Name' })).rejects.toThrow();
+    });
+
+    it('should pass fileId to createFileHttpClient', async () => {
+      // Arrange
+      // Create spy on the private method using any
+      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFile),
+      });
+
+      // Act
+      await filesManager.update(1, { name: 'Updated name' });
 
       // Assert
       expect(createSpy).toHaveBeenCalledWith(1);

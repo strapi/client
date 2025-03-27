@@ -68,7 +68,7 @@ async function main() {
     populate: ['image'],
   });
 
-  if (techCategoryResult.data) {
+  if (techCategoryResult.data && techCategoryResult.data.length > 0) {
     const categoryData = techCategoryResult.data[0];
     console.log(`Working with category: ${categoryData.name} (ID: ${categoryData.id})`);
 
@@ -88,6 +88,49 @@ async function main() {
       console.log(`  Size: ${formatFileSize(fileInfo.size)}`);
       console.log(`  URL: ${fileInfo.url}`);
     }
+  }
+
+  // Example: Update file metadata
+  console.log('\n=== File Update Operations ===\n');
+
+  if (techCategoryResult.data && techCategoryResult.data.length > 0) {
+    const categoryData = techCategoryResult.data[0];
+
+    // Only proceed if the category has an image
+    if (categoryData.image) {
+      const imageId = categoryData.image.id;
+      console.log(`Working with image: ${categoryData.image.name} (ID: ${imageId})`);
+
+      // Update the file metadata
+      // For demo purposes, we'll update the alternative text and caption
+      const updatedAltText = `Updated alt text for ${categoryData.image.name} - ${new Date().toISOString()}`;
+      const updatedCaption = `Updated caption - ${new Date().toISOString()}`;
+
+      console.log('\nUpdating file metadata...');
+      console.log(`  New Alt Text: ${updatedAltText}`);
+      console.log(`  New Caption: ${updatedCaption}`);
+
+      try {
+        const updatedFile = await client.files.update(imageId, {
+          alternativeText: updatedAltText,
+          caption: updatedCaption,
+        });
+
+        console.log('\nFile metadata updated successfully!');
+        console.log(`  Name: ${updatedFile.name}`);
+        console.log(`  Alternative Text: ${updatedFile.alternativeText || 'None'}`);
+        console.log(`  Caption: ${updatedFile.caption || 'None'}`);
+        console.log(`  Updated At: ${new Date(updatedFile.updatedAt).toLocaleString()}`);
+      } catch (error) {
+        console.error('Error updating file:', error);
+      }
+    } else {
+      console.log('No image associated with this category to update');
+    }
+  } else {
+    console.log(
+      'Tech category not found. Make sure you have a category with slug "tech" in your Strapi instance.'
+    );
   }
 }
 
