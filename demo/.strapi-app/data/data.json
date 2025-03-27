@@ -30,23 +30,28 @@
   "categories": [
     {
       "name": "news",
-      "slug": "news"
+      "slug": "news",
+      "image": "what-s-inside-a-black-hole.jpg"
     },
     {
       "name": "tech",
-      "slug": "tech"
+      "slug": "tech",
+      "image": "a-bug-is-becoming-a-meme-on-the-internet.jpg"
     },
     {
       "name": "food",
-      "slug": "food"
+      "slug": "food",
+      "image": "we-love-pizza.jpg"
     },
     {
       "name": "nature",
-      "slug": "nature"
+      "slug": "nature",
+      "image": "beautiful-picture.jpg"
     },
     {
       "name": "story",
-      "slug": "story"
+      "slug": "story",
+      "image": "the-internet-s-own-boy.jpg"
     }
   ],
   "authors": [

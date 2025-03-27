@@ -3,6 +3,7 @@ import createDebug from 'debug';
 import { AuthManager } from './auth';
 import { CollectionTypeManager, SingleTypeManager } from './content-types';
 import { StrapiError, StrapiInitializationError } from './errors';
+import { FilesManager } from './files';
 import { HttpClient } from './http';
 import { AuthInterceptors, HttpInterceptors } from './interceptors';
 import { StrapiConfigValidator } from './validators';
@@ -54,6 +55,9 @@ export class Strapi {
   private readonly _httpClient: HttpClient;
 
   /** @internal */
+  private readonly _filesManager: FilesManager;
+
+  /** @internal */
   constructor(
     // Properties
     config: StrapiConfig,
@@ -85,6 +89,9 @@ export class Strapi {
     this._httpClient = httpClientFactory
       ? httpClientFactory({ baseURL: config.baseURL })
       : new HttpClient({ baseURL: config.baseURL });
+
+    // Initialize the files manager
+    this._filesManager = new FilesManager(this._httpClient);
 
     this.init();
 
@@ -347,5 +354,34 @@ export class Strapi {
    */
   single(resource: string) {
     return new SingleTypeManager(resource, this._httpClient);
+  }
+
+  /**
+   * Returns access to the files API to interact with media files uploaded to Strapi.
+   *
+   * This property provides methods for retrieving files from the upload plugin: findOne, find.
+   *
+   * @returns An instance of {@link FilesManager} to work with files.
+   *
+   * @example
+   * ```typescript
+   * // Initialize the client with required configuration
+   * const client = new Strapi({ baseURL: 'http://localhost:1337/api' });
+   *
+   * // Example: retrieve a list of image files
+   * const imageFiles = await client.files.find({
+   *   filters: { mime: { $contains: 'image' } },
+   *   sort: 'name:asc'
+   * });
+   *
+   * // Example: retrieve a single file by ID
+   * const file = await client.files.findOne(1);
+   * ```
+   *
+   * @see FilesManager
+   * @see Strapi
+   */
+  get files() {
+    return this._filesManager;
   }
 }

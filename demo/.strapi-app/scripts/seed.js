@@ -484,7 +484,15 @@ async function importAbout() {
  */
 async function importCategories() {
   for (const category of categories) {
-    await createEntry({ model: 'category', entry: category });
+    const image = category.image ? await fileHandler.sync([category.image]) : null;
+
+    await createEntry({
+      model: 'category',
+      entry: {
+        ...category,
+        image,
+      },
+    });
   }
 }
 
