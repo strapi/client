@@ -1,5 +1,6 @@
 import { strapi } from '@strapi/client';
 import * as dotenv from 'dotenv';
+import * as os from 'os';
 dotenv.config();
 
 const api_token = process.env.FULL_ACCESS_TOKEN; // READ_ONLY_TOKEN is also available
@@ -79,7 +80,9 @@ async function runDemo() {
 }
 
 async function demonstrateBasicCategoryFunctionality() {
-  console.log('\n=== Basic Category Data ===\n');
+  console.log(os.EOL);
+  console.log('=== Basic Category Data ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -92,7 +95,9 @@ async function demonstrateBasicCategoryFunctionality() {
 }
 
 async function demonstrateCategoryImageInteractions() {
-  console.log('\n=== Categories with their images ===\n');
+  console.log(os.EOL);
+  console.log('=== Categories with their images ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -117,7 +122,9 @@ async function demonstrateCategoryImageInteractions() {
 }
 
 async function demonstrateDirectFileOperations() {
-  console.log('\n=== Direct file queries ===\n');
+  console.log(os.EOL);
+  console.log('=== Direct file queries ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -141,7 +148,9 @@ async function demonstrateDirectFileOperations() {
 
       // Get the specific file by ID
       const fileInfo = (await client.files.findOne(imageId)) as unknown as FileAttributes;
-      console.log('\nFile details:');
+
+      console.log(os.EOL);
+      console.log('File details:');
       console.log(`  Name: ${fileInfo.name}`);
       console.log(`  Alternative Text: ${fileInfo.alternativeText || 'None'}`);
       console.log(`  Caption: ${fileInfo.caption || 'None'}`);
@@ -155,7 +164,9 @@ async function demonstrateDirectFileOperations() {
 }
 
 async function demonstrateFileUpdates() {
-  console.log('\n=== File Update Operations ===\n');
+  console.log(os.EOL);
+  console.log('=== File Update Operations ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -182,7 +193,8 @@ async function demonstrateFileUpdates() {
       const updatedAltText = `Updated alt text for ${categoryData.image.name} - ${new Date().toISOString()}`;
       const updatedCaption = `Updated caption - ${new Date().toISOString()}`;
 
-      console.log('\nUpdating file metadata...');
+      console.log(os.EOL);
+      console.log('Updating file metadata...');
       console.log(`  New Alt Text: ${updatedAltText}`);
       console.log(`  New Caption: ${updatedCaption}`);
 
@@ -192,7 +204,8 @@ async function demonstrateFileUpdates() {
           caption: updatedCaption,
         });
 
-        console.log('\nFile metadata updated successfully!');
+        console.log(os.EOL);
+        console.log('File metadata updated successfully!');
         console.log(`  Name: ${updatedFile.name}`);
         console.log(`  Alternative Text: ${updatedFile.alternativeText || 'None'}`);
         console.log(`  Caption: ${updatedFile.caption || 'None'}`);
@@ -269,7 +282,8 @@ function formatFileSize(bytes: number): string {
 // Run the demo
 runDemo()
   .then(() => {
-    console.log('\nDemo completed successfully!');
+    console.log(os.EOL);
+    console.log('Demo completed successfully!');
   })
   .catch((error) => {
     console.error('Error running demo:', error);
