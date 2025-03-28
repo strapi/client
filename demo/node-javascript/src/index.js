@@ -132,6 +132,48 @@ async function main() {
       'Tech category not found. Make sure you have a category with slug "tech" in your Strapi instance.'
     );
   }
+
+  console.log('\n=== File Deletion Operations ===\n');
+
+  const getFileThatCanBeDeleted = async () => {
+    try {
+      const files = await client.files.find();
+      if (files && files.length > 0) {
+        const fileToDelete = files[0];
+        console.log(`Found file to delete: ${fileToDelete.name} (ID: ${fileToDelete.id})`);
+        return fileToDelete.id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error finding files:', error);
+      return null;
+    }
+  };
+
+  const PERFORM_ACTUAL_DELETE = true;
+  const fileIdToDelete = await getFileThatCanBeDeleted();
+
+  if (fileIdToDelete && PERFORM_ACTUAL_DELETE) {
+    console.log(`\nAttempting to delete file with ID: ${fileIdToDelete}`);
+
+    try {
+      const deletedFile = await client.files.delete(fileIdToDelete);
+      console.log('Deleted file metadata:', deletedFile);
+
+      console.log(`\nAttempting to find deleted file with ID: ${fileIdToDelete}`);
+      try {
+        const file = await client.files.findOne(fileIdToDelete);
+        console.error('Unexpected result: File still exists:', file);
+      } catch (error) {
+        console.log('Expected error: File no longer exists');
+        console.log(`Error message: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Error during file deletion demonstration:', error);
+    }
+  } else {
+    console.log('No files available for deletion demonstration.');
+  }
 }
 
 main().catch(console.error);

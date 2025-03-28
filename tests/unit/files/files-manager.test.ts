@@ -630,4 +630,119 @@ describe('FilesManager', () => {
       expect(createSpy).toHaveBeenCalledWith(1);
     });
   });
+
+  describe('delete', () => {
+    it('should successfully delete a file by ID', async () => {
+      // Arrange
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+      });
+
+      // Act
+      const result = await filesManager.delete(1);
+
+      // Assert
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+      const requestArg = mockFetch.mock.calls[0][0];
+
+      // Check that the URL and method are correct
+      expect(requestArg.url).toBe('http://example.com/api/upload/files/1');
+      expect(requestArg.method).toBe('DELETE');
+
+      // Check the returned result
+      expect(result).toEqual({ id: 1, name: 'deleted-file.jpg' });
+    });
+
+    it('should throw FileNotFoundError when deleting a non-existent file', async () => {
+      // Arrange
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
+
+      // Create an HTTPNotFoundError that would be thrown by the HttpClient
+      const httpNotFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(httpNotFoundError);
+
+      // Act & Assert
+      try {
+        await filesManager.delete(fileId);
+        fail('Expected an error to be thrown');
+      } catch (error) {
+        // Check that the error is properly mapped to a FileNotFoundError
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          // Verify the error contains the file ID and a relevant message
+          expect(error.fileId).toBe(fileId);
+          expect(error.message).toContain(`File with ID ${fileId} not found`);
+          // Verify the original request and response are preserved
+          expect(error.request).toBe(mockRequest);
+          expect(error.response).toBe(mockResponse);
+        }
+      }
+    });
+
+    it('should throw an error when passed an invalid file ID', async () => {
+      // Act & Assert with invalid IDs
+      await expect(filesManager.delete(0)).rejects.toThrow('Invalid file ID');
+      await expect(filesManager.delete(-1)).rejects.toThrow('Invalid file ID');
+      await expect(filesManager.delete(NaN)).rejects.toThrow('Invalid file ID');
+
+      // @ts-expect-error Testing with wrong type
+      await expect(filesManager.delete('1')).rejects.toThrow('Invalid file ID');
+
+      // @ts-expect-error Testing with null
+      await expect(filesManager.delete(null)).rejects.toThrow('Invalid file ID');
+
+      // @ts-expect-error Testing with undefined
+      await expect(filesManager.delete(undefined)).rejects.toThrow('Invalid file ID');
+    });
+
+    it('should throw FileForbiddenError when user does not have permission', async () => {
+      // Arrange
+      const fileId = 1;
+      const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
+      const mockResponse = new Response('Forbidden', { status: 403, statusText: 'Forbidden' });
+
+      // Create an HTTPForbiddenError that would be thrown by the HttpClient
+      const httpForbiddenError = new HTTPForbiddenError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(httpForbiddenError);
+
+      // Act & Assert
+      try {
+        await filesManager.delete(fileId);
+        fail('Expected an error to be thrown');
+      } catch (error) {
+        // Check that the error is properly mapped to a FileForbiddenError
+        expect(error).toBeInstanceOf(FileForbiddenError);
+        if (error instanceof FileForbiddenError) {
+          // Verify the error contains the file ID and a relevant message
+          expect(error.fileId).toBe(fileId);
+          expect(error.message).toContain(`Access to file with ID ${fileId} is forbidden`);
+          // Verify the original request and response are preserved
+          expect(error.request).toBe(mockRequest);
+          expect(error.response).toBe(mockResponse);
+        }
+      }
+    });
+
+    it('should pass fileId to createFileHttpClient', async () => {
+      // Arrange
+      // Create spy on the private method using any
+      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+      });
+
+      // Act
+      await filesManager.delete(1);
+
+      // Assert
+      expect(createSpy).toHaveBeenCalledWith(1);
+    });
+  });
 });
