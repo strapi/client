@@ -218,4 +218,75 @@ describe('Strapi Client - Files Integration', () => {
       }
     });
   });
+
+  describe('files.delete integration', () => {
+    it('should correctly call the delete endpoint', async () => {
+      // Arrange
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+      });
+
+      // Act
+      const result = await strapi.files.delete(1);
+
+      // Assert
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload/files/1');
+      expect(requestArg.method).toBe('DELETE');
+      expect(result).toEqual({ id: 1, name: 'deleted-file.jpg' });
+    });
+
+    it('should pass authentication headers when deleting a file', async () => {
+      // Arrange
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+      });
+
+      // Create an authenticated Strapi client
+      const authenticatedStrapi = new Strapi({
+        baseURL: 'http://example.com/api',
+        auth: {
+          strategy: 'api-token',
+          options: { token: 'test_token' },
+        },
+      });
+
+      // Act
+      await authenticatedStrapi.files.delete(1);
+
+      // Assert
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload/files/1');
+      expect(requestArg.method).toBe('DELETE');
+      expect(requestArg.headers.get('Authorization')).toBe('Bearer test_token');
+    });
+
+    it('should handle file not found errors when deleting', async () => {
+      // Arrange
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
+
+      // Create a not found error that will be thrown by HttpClient
+      const httpNotFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(httpNotFoundError);
+
+      // Act & Assert
+      try {
+        await strapi.files.delete(fileId);
+        fail('Expected error was not thrown');
+      } catch (error) {
+        // The error should be mapped to a FileNotFoundError
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          expect(error.fileId).toBe(fileId);
+          expect(error.message).toContain(`File with ID ${fileId} not found`);
+        }
+      }
+    });
+  });
 });

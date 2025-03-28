@@ -210,6 +210,7 @@ The `files` property provides access to the Strapi Media Library through the Upl
 - `find(params?: FileQueryParams): Promise<FileListResponse>` - Retrieves a list of file metadata based on optional query parameters
 - `findOne(fileId: number): Promise<FileResponse>` - Retrieves the metadata for a single file by its ID
 - `update(fileId: number, fileInfo: FileUpdateData): Promise<FileResponse>` - Updates metadata for an existing file
+- `delete(fileId: number): Promise<void>` - Deletes a file by its ID
 
 #### Example: Finding Files
 
@@ -269,6 +270,23 @@ const updatedFile = await client.files.update(1, {
 
 console.log(updatedFile.name); // Updated file name
 console.log(updatedFile.alternativeText); // Updated alt text
+```
+
+#### Example: Deleting a File
+
+```typescript
+// Initialize the client
+const client = strapi({
+  baseURL: 'http://localhost:1337/api',
+  auth: 'your-api-token',
+});
+
+// Delete a file by ID
+const deletedFile = await client.files.delete(1);
+
+console.log('File deleted successfully');
+console.log('Deleted file ID:', deletedFile.id);
+console.log('Deleted file name:', deletedFile.name);
 ```
 
 ## 🐛 Debug
