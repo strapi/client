@@ -229,7 +229,9 @@ async function demonstrateFileDeletion() {
     return;
   }
 
-  console.log('\n=== File Deletion Operations ===\n');
+  console.log(os.EOL);
+  console.log('=== File Deletion Operations ===');
+  console.log(os.EOL);
 
   const getFileThatCanBeDeleted = async (): Promise<number | null> => {
     try {
@@ -249,13 +251,15 @@ async function demonstrateFileDeletion() {
   const fileIdToDelete = await getFileThatCanBeDeleted();
 
   if (fileIdToDelete) {
-    console.log(`\nAttempting to delete file with ID: ${fileIdToDelete}`);
+    console.log(os.EOL);
+    console.log(`Attempting to delete file with ID: ${fileIdToDelete}`);
 
     try {
       const deletedFile = await client.files.delete(fileIdToDelete);
       console.log('Deleted file metadata:', deletedFile);
 
-      console.log(`\nAttempting to find deleted file with ID: ${fileIdToDelete}`);
+      console.log(os.EOL);
+      console.log(`Attempting to find deleted file with ID: ${fileIdToDelete}`);
       try {
         const file = await client.files.findOne(fileIdToDelete);
         console.error('Unexpected result: File still exists:', file);
