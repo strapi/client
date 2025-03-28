@@ -683,22 +683,6 @@ describe('FilesManager', () => {
       }
     });
 
-    it('should throw an error when passed an invalid file ID', async () => {
-      // Act & Assert with invalid IDs
-      await expect(filesManager.delete(0)).rejects.toThrow('Invalid file ID');
-      await expect(filesManager.delete(-1)).rejects.toThrow('Invalid file ID');
-      await expect(filesManager.delete(NaN)).rejects.toThrow('Invalid file ID');
-
-      // @ts-expect-error Testing with wrong type
-      await expect(filesManager.delete('1')).rejects.toThrow('Invalid file ID');
-
-      // @ts-expect-error Testing with null
-      await expect(filesManager.delete(null)).rejects.toThrow('Invalid file ID');
-
-      // @ts-expect-error Testing with undefined
-      await expect(filesManager.delete(undefined)).rejects.toThrow('Invalid file ID');
-    });
-
     it('should throw FileForbiddenError when user does not have permission', async () => {
       // Arrange
       const fileId = 1;

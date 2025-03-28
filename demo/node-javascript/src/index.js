@@ -164,7 +164,7 @@ async function main() {
     }
   };
 
-  const PERFORM_ACTUAL_DELETE = true;
+  const PERFORM_ACTUAL_DELETE = false;
   const fileIdToDelete = await getFileThatCanBeDeleted();
 
   if (fileIdToDelete && PERFORM_ACTUAL_DELETE) {

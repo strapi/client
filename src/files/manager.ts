@@ -212,10 +212,6 @@ export class FilesManager {
    * ```
    */
   async delete(fileId: number): Promise<FileResponse> {
-    if (!fileId || typeof fileId !== 'number' || isNaN(fileId) || fileId <= 0) {
-      throw new Error('Invalid file ID. Expected a positive number.');
-    }
-
     debug('deleting file with ID %o', fileId);
 
     try {
