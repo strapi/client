@@ -1,5 +1,6 @@
 import { strapi } from '@strapi/client';
 import * as dotenv from 'dotenv';
+import * as os from 'os';
 dotenv.config();
 
 const api_token = process.env.FULL_ACCESS_TOKEN; // READ_ONLY_TOKEN is also available
@@ -74,10 +75,13 @@ async function runDemo() {
   await demonstrateBasicCategoryFunctionality();
   await demonstrateCategoryImageInteractions();
   await demonstrateDirectFileOperations();
+  await demonstrateFileUpdates();
 }
 
 async function demonstrateBasicCategoryFunctionality() {
-  console.log('\n=== Basic Category Data ===\n');
+  console.log(os.EOL);
+  console.log('=== Basic Category Data ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -90,7 +94,9 @@ async function demonstrateBasicCategoryFunctionality() {
 }
 
 async function demonstrateCategoryImageInteractions() {
-  console.log('\n=== Categories with their images ===\n');
+  console.log(os.EOL);
+  console.log('=== Categories with their images ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -115,7 +121,9 @@ async function demonstrateCategoryImageInteractions() {
 }
 
 async function demonstrateDirectFileOperations() {
-  console.log('\n=== Direct file queries ===\n');
+  console.log(os.EOL);
+  console.log('=== Direct file queries ===');
+  console.log(os.EOL);
 
   const categories = client.collection('categories');
 
@@ -139,7 +147,9 @@ async function demonstrateDirectFileOperations() {
 
       // Get the specific file by ID
       const fileInfo = (await client.files.findOne(imageId)) as unknown as FileAttributes;
-      console.log('\nFile details:');
+
+      console.log(os.EOL);
+      console.log('File details:');
       console.log(`  Name: ${fileInfo.name}`);
       console.log(`  Alternative Text: ${fileInfo.alternativeText || 'None'}`);
       console.log(`  Caption: ${fileInfo.caption || 'None'}`);
@@ -149,6 +159,66 @@ async function demonstrateDirectFileOperations() {
       console.log(`  Size: ${formatFileSize(fileInfo.size)}`);
       console.log(`  URL: ${fileInfo.url}`);
     }
+  }
+}
+
+async function demonstrateFileUpdates() {
+  console.log(os.EOL);
+  console.log('=== File Update Operations ===');
+  console.log(os.EOL);
+
+  const categories = client.collection('categories');
+
+  // Get a specific category using find with a filter
+  const techCategoryResult = (await categories.find({
+    filters: {
+      slug: {
+        $eq: 'tech',
+      },
+    },
+    populate: ['image'],
+  })) as unknown as CategoryResponse;
+
+  if (techCategoryResult.data && techCategoryResult.data.length > 0) {
+    const categoryData = techCategoryResult.data[0];
+
+    // Only proceed if the category has an image
+    if (categoryData.image) {
+      const imageId = categoryData.image.id;
+      console.log(`Working with image: ${categoryData.image.name} (ID: ${imageId})`);
+
+      // Update the file metadata
+      // For demo purposes, we'll update the alternative text and caption
+      const updatedAltText = `Updated alt text for ${categoryData.image.name} - ${new Date().toISOString()}`;
+      const updatedCaption = `Updated caption - ${new Date().toISOString()}`;
+
+      console.log(os.EOL);
+      console.log('Updating file metadata...');
+      console.log(`  New Alt Text: ${updatedAltText}`);
+      console.log(`  New Caption: ${updatedCaption}`);
+
+      try {
+        const updatedFile = await client.files.update(imageId, {
+          alternativeText: updatedAltText,
+          caption: updatedCaption,
+        });
+
+        console.log(os.EOL);
+        console.log('File metadata updated successfully!');
+        console.log(`  Name: ${updatedFile.name}`);
+        console.log(`  Alternative Text: ${updatedFile.alternativeText || 'None'}`);
+        console.log(`  Caption: ${updatedFile.caption || 'None'}`);
+        console.log(`  Updated At: ${new Date(updatedFile.updatedAt).toLocaleString()}`);
+      } catch (error) {
+        console.error('Error updating file:', error);
+      }
+    } else {
+      console.log('No image associated with this category to update');
+    }
+  } else {
+    console.log(
+      'Tech category not found. Make sure you have a category with slug "tech" in your Strapi instance.'
+    );
   }
 }
 
@@ -163,7 +233,8 @@ function formatFileSize(bytes: number): string {
 // Run the demo
 runDemo()
   .then(() => {
-    console.log('\nDemo completed successfully!');
+    console.log(os.EOL);
+    console.log('Demo completed successfully!');
   })
   .catch((error) => {
     console.error('Error running demo:', error);

@@ -1,4 +1,6 @@
 import { Strapi } from '../../../src/client';
+import { HTTPNotFoundError } from '../../../src/errors';
+import { FileNotFoundError } from '../../../src/files';
 import { mockFile, mockFiles } from '../../fixtures/files';
 
 describe('Strapi Client - Files Integration', () => {
@@ -147,6 +149,73 @@ describe('Strapi Client - Files Integration', () => {
 
       // Act & Assert
       await expect(strapi.files.find()).rejects.toThrow('Network error');
+    });
+  });
+
+  describe('files.update integration', () => {
+    it('should pass authentication headers when updating a file', async () => {
+      // Arrange
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockFile),
+      });
+
+      // Create an authenticated Strapi client
+      const authenticatedStrapi = new Strapi({
+        baseURL: 'http://example.com/api',
+        auth: {
+          strategy: 'api-token',
+          options: { token: 'test_token' },
+        },
+      });
+
+      // Act
+      await authenticatedStrapi.files.update(1, { name: 'Updated via token auth' });
+
+      // Assert
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload?id=1');
+      expect(requestArg.method).toBe('POST');
+      expect(requestArg.headers.get('Authorization')).toBe('Bearer test_token');
+
+      // Verify request has a body
+      expect(requestArg.body).toBeTruthy();
+    });
+
+    it('should handle validation errors when updating a file', async () => {
+      // Arrange
+      mockFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 400,
+        statusText: 'Bad Request',
+      });
+
+      // Act & Assert
+      await expect(strapi.files.update(1, { name: 'Test' })).rejects.toThrow();
+    });
+
+    it('should handle file not found errors', async () => {
+      // Arrange
+      const fileId = 999;
+      const mockRequest = new Request(`http://example.com/api/upload?id=${fileId}`);
+      const mockResponse = new Response('Not Found', { status: 404, statusText: 'Not Found' });
+
+      // Create a not found error that will be thrown by HttpClient
+      const httpNotFoundError = new HTTPNotFoundError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(httpNotFoundError);
+
+      // Act & Assert
+      try {
+        await strapi.files.update(fileId, { name: 'Test' });
+        fail('Expected error was not thrown');
+      } catch (error) {
+        // The error should be mapped to a FileNotFoundError
+        expect(error).toBeInstanceOf(FileNotFoundError);
+        if (error instanceof FileNotFoundError) {
+          expect(error.fileId).toBe(fileId);
+          expect(error.message).toContain(`File with ID ${fileId} not found`);
+        }
+      }
     });
   });
 });

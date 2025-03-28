@@ -19,6 +19,15 @@ export interface FileQueryParams {
 }
 
 /**
+ * Interface defining the fields that can be updated for a file.
+ */
+export interface FileUpdateData {
+  name?: string;
+  alternativeText?: string;
+  caption?: string;
+}
+
+/**
  * Response structure for a single file from the Strapi upload plugin.
  * This interface represents the actual response structure from the API.
  */

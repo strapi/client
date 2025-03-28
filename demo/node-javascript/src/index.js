@@ -1,5 +1,6 @@
 const { strapi } = require('@strapi/client');
 require('dotenv').config();
+const os = require('os');
 
 const api_token = process.env.FULL_ACCESS_TOKEN; // READ_ONLY_TOKEN is also available
 
@@ -20,7 +21,9 @@ async function main() {
   // Create a collection type query manager for the categories
   const categories = client.collection('categories');
 
-  console.log('\n=== Basic Category Data ===\n');
+  console.log(os.EOL);
+  console.log('=== Basic Category Data ===');
+  console.log(os.EOL);
 
   // Fetch the list of all categories (basic demo)
   const basicCategoryData = await categories.find();
@@ -33,7 +36,9 @@ async function main() {
   });
 
   // Example: Category with image files
-  console.log('\n=== Categories with their images ===\n');
+  console.log(os.EOL);
+  console.log('=== Categories with their images ===');
+  console.log(os.EOL);
 
   // Fetch all categories with their related images
   const result = await categories.find({
@@ -57,7 +62,9 @@ async function main() {
   }
 
   // Example: Direct file operations
-  console.log('\n=== Direct file queries ===\n');
+  console.log(os.EOL);
+  console.log('=== Direct file queries ===');
+  console.log(os.EOL);
 
   const techCategoryResult = await categories.find({
     filters: {
@@ -68,7 +75,7 @@ async function main() {
     populate: ['image'],
   });
 
-  if (techCategoryResult.data) {
+  if (techCategoryResult.data && techCategoryResult.data.length > 0) {
     const categoryData = techCategoryResult.data[0];
     console.log(`Working with category: ${categoryData.name} (ID: ${categoryData.id})`);
 
@@ -78,7 +85,8 @@ async function main() {
 
       // Get the specific file by ID
       const fileInfo = await client.files.findOne(imageId);
-      console.log('\nFile details:');
+      console.log(os.EOL);
+      console.log('File details:');
       console.log(`  Name: ${fileInfo.name}`);
       console.log(`  Alternative Text: ${fileInfo.alternativeText || 'None'}`);
       console.log(`  Caption: ${fileInfo.caption || 'None'}`);
@@ -88,6 +96,53 @@ async function main() {
       console.log(`  Size: ${formatFileSize(fileInfo.size)}`);
       console.log(`  URL: ${fileInfo.url}`);
     }
+  }
+
+  // Example: Update file metadata
+  console.log(os.EOL);
+  console.log('=== File Update Operations ===');
+  console.log(os.EOL);
+
+  if (techCategoryResult.data && techCategoryResult.data.length > 0) {
+    const categoryData = techCategoryResult.data[0];
+
+    // Only proceed if the category has an image
+    if (categoryData.image) {
+      const imageId = categoryData.image.id;
+      console.log(`Working with image: ${categoryData.image.name} (ID: ${imageId})`);
+
+      // Update the file metadata
+      // For demo purposes, we'll update the alternative text and caption
+      const updatedAltText = `Updated alt text for ${categoryData.image.name} - ${new Date().toISOString()}`;
+      const updatedCaption = `Updated caption - ${new Date().toISOString()}`;
+
+      console.log(os.EOL);
+      console.log('Updating file metadata...');
+      console.log(`  New Alt Text: ${updatedAltText}`);
+      console.log(`  New Caption: ${updatedCaption}`);
+
+      try {
+        const updatedFile = await client.files.update(imageId, {
+          alternativeText: updatedAltText,
+          caption: updatedCaption,
+        });
+
+        console.log(os.EOL);
+        console.log('File metadata updated successfully!');
+        console.log(`  Name: ${updatedFile.name}`);
+        console.log(`  Alternative Text: ${updatedFile.alternativeText || 'None'}`);
+        console.log(`  Caption: ${updatedFile.caption || 'None'}`);
+        console.log(`  Updated At: ${new Date(updatedFile.updatedAt).toLocaleString()}`);
+      } catch (error) {
+        console.error('Error updating file:', error);
+      }
+    } else {
+      console.log('No image associated with this category to update');
+    }
+  } else {
+    console.log(
+      'Tech category not found. Make sure you have a category with slug "tech" in your Strapi instance.'
+    );
   }
 }
 

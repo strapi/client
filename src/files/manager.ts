@@ -5,7 +5,7 @@ import { URLHelper } from '../utilities';
 
 import { FILE_API_PREFIX } from './constants';
 import { FileErrorMapper } from './errors';
-import { FileQueryParams, FileListResponse, FileResponse } from './types';
+import { FileQueryParams, FileListResponse, FileResponse, FileUpdateData } from './types';
 
 const debug = createDebug('strapi:files');
 
@@ -90,7 +90,7 @@ export class FilesManager {
     debug('finding files');
 
     try {
-      let url = FILE_API_PREFIX;
+      let url = `${FILE_API_PREFIX}/files`;
 
       if (queryParams) {
         url = URLHelper.appendQueryParams(url, queryParams);
@@ -130,7 +130,7 @@ export class FilesManager {
   async findOne(fileId: number): Promise<FileResponse> {
     debug('finding file with ID %o', fileId);
 
-    const url = `${FILE_API_PREFIX}/${fileId}`;
+    const url = `${FILE_API_PREFIX}/files/${fileId}`;
     const client = this.createFileHttpClient(fileId);
 
     try {
@@ -143,6 +143,52 @@ export class FilesManager {
       return json;
     } catch (error) {
       debug('error finding file with ID %o: %o', fileId, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Updates metadata for an existing file.
+   *
+   * @param fileId - The numeric identifier of the file to update.
+   * @param fileInfo - An object containing the fields to update.
+   * @returns A promise that resolves to the updated file object.
+   *
+   * @throws {FileNotFoundError} if the file with the specified ID does not exist.
+   * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
+   *
+   * @example
+   * ```typescript
+   * const filesManager = new FilesManager(httpClient);
+   *
+   * const updatedFile = await filesManager.update(1, {
+   *   name: 'New file name',
+   *   alternativeText: 'Descriptive alt text for accessibility',
+   *   caption: 'A caption for the file'
+   * });
+   *
+   * console.log(updatedFile); // Updated file object
+   * ```
+   */
+  async update(fileId: number, fileInfo: FileUpdateData): Promise<FileResponse> {
+    debug('updating file with ID %o with data %o', fileId, fileInfo);
+
+    try {
+      const url = `${FILE_API_PREFIX}?id=${fileId}`;
+      const client = this.createFileHttpClient(fileId);
+
+      // Create FormData and add fileInfo as JSON string
+      const formData = new FormData();
+      formData.append('fileInfo', JSON.stringify(fileInfo));
+
+      const response = await client.post(url, formData);
+      const json = await response.json();
+
+      debug('successfully updated file with ID %o', fileId);
+
+      return json;
+    } catch (error) {
+      debug('error updating file with ID %o: %o', fileId, error);
       throw error;
     }
   }
