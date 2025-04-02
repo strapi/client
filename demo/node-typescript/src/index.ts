@@ -76,6 +76,7 @@ async function runDemo() {
   await demonstrateCategoryImageInteractions();
   await demonstrateDirectFileOperations();
   await demonstrateFileUpdates();
+  await demonstrateFileDeletion();
 }
 
 async function demonstrateBasicCategoryFunctionality() {
@@ -219,6 +220,58 @@ async function demonstrateFileUpdates() {
     console.log(
       'Tech category not found. Make sure you have a category with slug "tech" in your Strapi instance.'
     );
+  }
+}
+
+const PERFORM_ACTUAL_DELETE = false;
+async function demonstrateFileDeletion() {
+  if (!PERFORM_ACTUAL_DELETE) {
+    return;
+  }
+
+  console.log(os.EOL);
+  console.log('=== File Deletion Operations ===');
+  console.log(os.EOL);
+
+  const getFileThatCanBeDeleted = async (): Promise<number | null> => {
+    try {
+      const files = await client.files.find();
+      if (files && files.length > 0) {
+        const fileToDelete = files[0];
+        console.log(`Found file to delete: ${fileToDelete.name} (ID: ${fileToDelete.id})`);
+        return fileToDelete.id;
+      }
+      return null;
+    } catch (error) {
+      console.error('Error finding files:', error);
+      return null;
+    }
+  };
+
+  const fileIdToDelete = await getFileThatCanBeDeleted();
+
+  if (fileIdToDelete) {
+    console.log(os.EOL);
+    console.log(`Attempting to delete file with ID: ${fileIdToDelete}`);
+
+    try {
+      const deletedFile = await client.files.delete(fileIdToDelete);
+      console.log('Deleted file metadata:', deletedFile);
+
+      console.log(os.EOL);
+      console.log(`Attempting to find deleted file with ID: ${fileIdToDelete}`);
+      try {
+        const file = await client.files.findOne(fileIdToDelete);
+        console.error('Unexpected result: File still exists:', file);
+      } catch (error) {
+        console.log('Expected error: File no longer exists');
+        console.log(`Error message: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    } catch (error) {
+      console.error('Error during file deletion demonstration:', error);
+    }
+  } else {
+    console.log('No files available for deletion demonstration.');
   }
 }
 
