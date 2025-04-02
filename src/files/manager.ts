@@ -192,4 +192,41 @@ export class FilesManager {
       throw error;
     }
   }
+
+  /**
+   * Deletes a file by its ID.
+   *
+   * @param fileId - The numeric identifier of the file to delete.
+   * @returns A promise that resolves to the deleted file object.
+   *
+   * @throws {FileNotFoundError} if the file with the specified ID does not exist.
+   * @throws {FileForbiddenError} if the user does not have permission to delete the file.
+   * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
+   *
+   * @example
+   * ```typescript
+   * const filesManager = new FilesManager(httpClient);
+   *
+   * await filesManager.delete(1);
+   * console.log('File deleted successfully');
+   * ```
+   */
+  async delete(fileId: number): Promise<FileResponse> {
+    debug('deleting file with ID %o', fileId);
+
+    try {
+      const url = `${FILE_API_PREFIX}/files/${fileId}`;
+      const client = this.createFileHttpClient(fileId);
+
+      const response = await client.delete(url);
+      const json = await response.json();
+
+      debug('successfully deleted file with ID %o', fileId);
+
+      return json;
+    } catch (error) {
+      debug('error deleting file with ID %o: %o', fileId, error);
+      throw error;
+    }
+  }
 }
