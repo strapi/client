@@ -51,7 +51,7 @@ const node_build = {
   plugins: [
     // Locate modules using the Node resolution algorithm, for using third party modules in node_modules
     nodeResolve({
-      browser: false, // "browser" properties in package files are ignored
+      browser: true, // Only resolve browser-compatible modules
       preferBuiltins: true, // Prefer built-in modules
     }),
     // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
