@@ -1,3 +1,5 @@
+import { StrapiClient } from '../../src/client';
+import { CollectionTypeManager, SingleTypeManager } from '../../src/content-types';
 import {
   HTTPAuthorizationError,
   HTTPBadRequestError,
@@ -9,9 +11,7 @@ import {
   StrapiError,
   StrapiInitializationError,
   StrapiValidationError,
-} from '../../src';
-import { StrapiClient } from '../../src/client';
-import { CollectionTypeManager, SingleTypeManager } from '../../src/content-types';
+} from '../../src/errors';
 import { HttpClient, StatusCode } from '../../src/http';
 import { StrapiConfigValidator } from '../../src/validators';
 

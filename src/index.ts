@@ -92,17 +92,3 @@ export const strapi = (config: Config) => {
 
   return new StrapiClient(clientConfig);
 };
-
-// Error classes
-export * from './errors';
-
-// Public types and interfaces
-export type {
-  StrapiClientConfig,
-  StrapiClient,
-  // TODO: Remove deprecated symbols "Strapi" and "StrapiConfig" in v2
-  Strapi,
-  StrapiConfig,
-} from './client';
-export type { CollectionTypeManager, SingleTypeManager } from './content-types';
-export type { FilesManager, FileQueryParams, FileResponse, FileListResponse } from './files';

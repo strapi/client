@@ -1,6 +1,7 @@
-import { strapi, StrapiInitializationError } from '../../src';
+import { strapi } from '../../src';
 import { ApiTokenAuthProvider } from '../../src/auth';
 import { StrapiClient } from '../../src/client';
+import { StrapiInitializationError } from '../../src/errors';
 
 import type { Config } from '../../src';
 

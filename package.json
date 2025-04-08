@@ -30,7 +30,7 @@
   "browser": "./dist/bundle.browser.min.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./dist/exports.d.ts",
       "require": "./dist/bundle.cjs",
       "import": "./dist/bundle.mjs",
       "browser": {

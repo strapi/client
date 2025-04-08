@@ -1,4 +1,4 @@
-import { StrapiValidationError, URLValidationError } from '../../../src';
+import { StrapiValidationError, URLValidationError } from '../../../src/errors';
 import { StrapiConfigValidator, URLValidator } from '../../../src/validators';
 
 import type { StrapiClientConfig } from '../../../src/client';

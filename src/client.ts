@@ -375,15 +375,3 @@ export class StrapiClient {
     return new SingleTypeManager(resource, this._httpClient);
   }
 }
-
-// Support for deprecated types
-
-/**
- * @deprecated This type will be removed in v2, consider using {@link StrapiClientConfig} as a replacement
- */
-export type StrapiConfig = StrapiClientConfig;
-
-/**
- * @deprecated This type will be removed in v2, consider using {@link StrapiClient} as a replacement
- */
-export type Strapi = StrapiClient;
