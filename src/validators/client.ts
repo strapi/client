@@ -4,7 +4,7 @@ import { StrapiValidationError, URLValidationError } from '../errors';
 
 import { URLValidator } from './url';
 
-import type { StrapiConfig } from '../client';
+import type { StrapiClientConfig } from '../client';
 
 const debug = createDebug('strapi:validators:config');
 
@@ -31,7 +31,7 @@ export class StrapiConfigValidator {
    *
    * @throws {StrapiValidationError} If the configuration is invalid, or if the baseURL is invalid.
    */
-  validateConfig(config: StrapiConfig) {
+  validateConfig(config: StrapiClientConfig) {
     debug('validating client config');
 
     if (
