@@ -12,7 +12,7 @@ import type { HttpClientConfig } from './http';
 
 const debug = createDebug('strapi:core');
 
-export interface StrapiConfig {
+export interface StrapiClientConfig {
   /** The base URL of the Strapi content API, required for all client library operations. */
   baseURL: string;
 
@@ -41,9 +41,9 @@ export interface AuthConfig<T = unknown> {
  * It serves as the main interface through which users interact with
  * their Strapi installation programmatically.
  */
-export class Strapi {
+export class StrapiClient {
   /** @internal */
-  private readonly _config: StrapiConfig;
+  private readonly _config: StrapiClientConfig;
 
   /** @internal */
   private readonly _validator: StrapiConfigValidator;
@@ -54,13 +54,33 @@ export class Strapi {
   /** @internal */
   private readonly _httpClient: HttpClient;
 
-  /** @internal */
-  private readonly _filesManager: FilesManager;
+  /**
+   * Gives access to the files API to interact with media files uploaded to Strapi.
+   *
+   * @example
+   * ```typescript
+   * // Initialize the client with required configuration
+   * const client = strapi({ baseURL: 'http://localhost:1337/api' });
+   *
+   * // Example: retrieve a list of image files
+   * const imageFiles = await client.files.find({
+   *   filters: { mime: { $contains: 'image' } },
+   *   sort: 'name:asc'
+   * });
+   *
+   * // Example: retrieve a single file by ID
+   * const file = await client.files.findOne(1);
+   * ```
+   *
+   * @see FilesManager
+   * @see StrapiClient
+   */
+  public readonly files: FilesManager;
 
   /** @internal */
   constructor(
     // Properties
-    config: StrapiConfig,
+    config: StrapiClientConfig,
 
     // Dependencies
     validator: StrapiConfigValidator = new StrapiConfigValidator(),
@@ -90,8 +110,7 @@ export class Strapi {
       ? httpClientFactory({ baseURL: config.baseURL })
       : new HttpClient({ baseURL: config.baseURL });
 
-    // Initialize the files manager
-    this._filesManager = new FilesManager(this._httpClient);
+    this.files = new FilesManager(this._httpClient);
 
     this.init();
 
@@ -315,7 +334,7 @@ export class Strapi {
    * ```
    *
    * @see CollectionTypeManager
-   * @see Strapi
+   * @see StrapiClient
    */
   collection(resource: string) {
     return new CollectionTypeManager(resource, this._httpClient);
@@ -350,38 +369,21 @@ export class Strapi {
    * ```
    *
    * @see SingleTypeManager
-   * @see Strapi
+   * @see StrapiClient
    */
   single(resource: string) {
     return new SingleTypeManager(resource, this._httpClient);
   }
-
-  /**
-   * Returns access to the files API to interact with media files uploaded to Strapi.
-   *
-   * This property provides methods for retrieving files from the upload plugin: findOne, find.
-   *
-   * @returns An instance of {@link FilesManager} to work with files.
-   *
-   * @example
-   * ```typescript
-   * // Initialize the client with required configuration
-   * const client = new Strapi({ baseURL: 'http://localhost:1337/api' });
-   *
-   * // Example: retrieve a list of image files
-   * const imageFiles = await client.files.find({
-   *   filters: { mime: { $contains: 'image' } },
-   *   sort: 'name:asc'
-   * });
-   *
-   * // Example: retrieve a single file by ID
-   * const file = await client.files.findOne(1);
-   * ```
-   *
-   * @see FilesManager
-   * @see Strapi
-   */
-  get files() {
-    return this._filesManager;
-  }
 }
+
+// Support for deprecated types
+
+/**
+ * @deprecated This type will be removed in v2, consider using {@link StrapiClientConfig} as a replacement
+ */
+export type StrapiConfig = StrapiClientConfig;
+
+/**
+ * @deprecated This type will be removed in v2, consider using {@link StrapiClient} as a replacement
+ */
+export type Strapi = StrapiClient;

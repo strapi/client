@@ -1,6 +1,6 @@
 import { strapi, StrapiInitializationError } from '../../src';
 import { ApiTokenAuthProvider } from '../../src/auth';
-import { Strapi } from '../../src/client';
+import { StrapiClient } from '../../src/client';
 
 import type { Config } from '../../src';
 
@@ -13,7 +13,7 @@ describe('strapi', () => {
     const client = strapi(config);
 
     // Assert
-    expect(client).toBeInstanceOf(Strapi);
+    expect(client).toBeInstanceOf(StrapiClient);
     expect(client).toHaveProperty('baseURL', config.baseURL);
   });
 
@@ -26,7 +26,7 @@ describe('strapi', () => {
     const client = strapi(config);
 
     // Assert
-    expect(client).toBeInstanceOf(Strapi);
+    expect(client).toBeInstanceOf(StrapiClient);
     expect(client).toHaveProperty('auth', {
       strategy: ApiTokenAuthProvider.identifier, // default auth strategy
       options: { token },
