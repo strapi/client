@@ -30,7 +30,7 @@ const isProduction = process.env.NODE_ENV === 'production';
  * @type {import('rollup').RollupOptions}
  */
 const node_build = {
-  input: 'src/index.ts',
+  input: 'src/exports.ts',
   cache: true,
   output: [
     // CommonJS build
@@ -90,7 +90,7 @@ const node_build = {
  * @type {import('rollup').RollupOptions}
  */
 const browser_build = {
-  input: 'src/index.ts',
+  input: 'src/exports.ts',
   cache: true,
   output: [
     {

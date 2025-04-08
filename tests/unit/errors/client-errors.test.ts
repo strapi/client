@@ -1,4 +1,4 @@
-import { StrapiError, StrapiInitializationError, StrapiValidationError } from '../../../src';
+import { StrapiError, StrapiInitializationError, StrapiValidationError } from '../../../src/errors';
 
 describe('Strapi Errors', () => {
   describe('StrapiError', () => {

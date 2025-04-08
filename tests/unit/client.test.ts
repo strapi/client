@@ -1,3 +1,5 @@
+import { StrapiClient } from '../../src/client';
+import { CollectionTypeManager, SingleTypeManager } from '../../src/content-types';
 import {
   HTTPAuthorizationError,
   HTTPBadRequestError,
@@ -9,9 +11,7 @@ import {
   StrapiError,
   StrapiInitializationError,
   StrapiValidationError,
-} from '../../src';
-import { Strapi } from '../../src/client';
-import { CollectionTypeManager, SingleTypeManager } from '../../src/content-types';
+} from '../../src/errors';
 import { HttpClient, StatusCode } from '../../src/http';
 import { StrapiConfigValidator } from '../../src/validators';
 
@@ -23,7 +23,7 @@ import {
   MockFlakyURLValidator,
 } from './mocks';
 
-import type { StrapiConfig } from '../../src/client';
+import type { StrapiClientConfig } from '../../src/client';
 import type { HttpClientConfig } from '../../src/http';
 
 describe('Strapi', () => {
@@ -49,7 +49,7 @@ describe('Strapi', () => {
       const config = {
         baseURL: 'https://localhost:1337/api',
         auth: { strategy: MockAuthProvider.identifier },
-      } satisfies StrapiConfig;
+      } satisfies StrapiClientConfig;
 
       const mockValidator = new MockStrapiConfigValidator();
       const mockAuthManager = new MockAuthManager();
@@ -58,18 +58,23 @@ describe('Strapi', () => {
       const authSetStrategySpy = jest.spyOn(MockAuthManager.prototype, 'setStrategy');
 
       // Act
-      const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
 
       // Assert
 
-      expect(client).toBeInstanceOf(Strapi);
+      expect(client).toBeInstanceOf(StrapiClient);
       expect(validatorSpy).toHaveBeenCalledWith(config);
       expect(authSetStrategySpy).toHaveBeenCalledWith(MockAuthProvider.identifier, undefined);
     });
 
     it('should not set the auth strategy if no auth config is provided', () => {
       // Arrange
-      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
       const mockValidator = new MockStrapiConfigValidator();
       const mockAuthManager = new MockAuthManager();
@@ -77,10 +82,15 @@ describe('Strapi', () => {
       const authSetStrategySpy = jest.spyOn(MockAuthManager.prototype, 'setStrategy');
 
       // Act
-      const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
 
       // Assert
-      expect(client).toBeInstanceOf(Strapi);
+      expect(client).toBeInstanceOf(StrapiClient);
       expect(authSetStrategySpy).not.toHaveBeenCalled();
     });
 
@@ -94,7 +104,7 @@ describe('Strapi', () => {
         const config = {
           baseURL: 'https://localhost:1337/api',
           auth: { strategy: MockAuthProvider.identifier },
-        } satisfies StrapiConfig;
+        } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
@@ -105,7 +115,7 @@ describe('Strapi', () => {
 
         // Act
         expect(
-          () => new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory)
+          () => new StrapiClient(config, mockValidator, mockAuthManager, mockHttpClientFactory)
         ).toThrow(StrapiInitializationError);
 
         expect(mockAuthManager.setStrategy).toHaveBeenCalledWith(
@@ -117,30 +127,30 @@ describe('Strapi', () => {
 
     it('should throw an error on invalid baseURL', () => {
       // Arrange
-      const config = { baseURL: 'invalid-url' } satisfies StrapiConfig;
+      const config = { baseURL: 'invalid-url' } satisfies StrapiClientConfig;
 
       const mockValidator = new MockStrapiConfigValidator();
 
       const validateConfigSpy = jest.spyOn(mockValidator, 'validateConfig');
 
       // Act & Assert
-      expect(() => new Strapi(config, mockValidator)).toThrow(StrapiInitializationError);
+      expect(() => new StrapiClient(config, mockValidator)).toThrow(StrapiInitializationError);
       expect(validateConfigSpy).toHaveBeenCalledWith(config);
     });
 
     it('should fail to create and client instance if there is an unexpected error', () => {
       // Arrange
-      let client!: Strapi;
+      let client!: StrapiClient;
 
       const baseURL = 'https://example.com';
-      const config: StrapiConfig = { baseURL } satisfies StrapiConfig;
+      const config = { baseURL } satisfies StrapiClientConfig;
       const expectedError = new StrapiInitializationError(new Error('Unexpected error'));
 
       const validateSpy = jest.spyOn(MockFlakyURLValidator.prototype, 'validate');
 
       // Act
       const instantiateClient = () => {
-        client = new Strapi(config, new StrapiConfigValidator(new MockFlakyURLValidator()));
+        client = new StrapiClient(config, new StrapiConfigValidator(new MockFlakyURLValidator()));
       };
 
       // Assert
@@ -154,10 +164,10 @@ describe('Strapi', () => {
 
     it('should initialize correctly with the default validator', () => {
       // Arrange
-      const client = new Strapi({ baseURL: 'https://localhost:1337/api' });
+      const client = new StrapiClient({ baseURL: 'https://localhost:1337/api' });
 
       // Act & Assert
-      expect(client).toBeInstanceOf(Strapi);
+      expect(client).toBeInstanceOf(StrapiClient);
     });
   });
 
@@ -165,12 +175,17 @@ describe('Strapi', () => {
     it('should return a new CollectionTypeManager instance when given a resource name', () => {
       // Arrange
       const resource = 'articles';
-      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
       const mockValidator = new MockStrapiConfigValidator();
       const mockAuthManager = new MockAuthManager();
 
-      const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
 
       // Act
       const collection = client.collection(resource);
@@ -185,12 +200,17 @@ describe('Strapi', () => {
     it('should return a new SingleTypeManager instance when given a resource name', () => {
       // Arrange
       const resource = 'homepage';
-      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
       const mockValidator = new MockStrapiConfigValidator();
       const mockAuthManager = new MockAuthManager();
 
-      const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
 
       // Act
       const single = client.single(resource);
@@ -206,12 +226,17 @@ describe('Strapi', () => {
       it('fetch should add an application/json Content-Type header to each request', async () => {
         // Arrange
         const path = '/homepage';
-        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         const fetchSpy = jest.spyOn(MockHttpClient.prototype, 'fetch');
 
@@ -234,7 +259,7 @@ describe('Strapi', () => {
         const path = '/upload';
         const contentType = 'multipart/form-data';
 
-        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
         const init = {
           method: 'POST',
           headers: { 'Content-Type': contentType },
@@ -243,7 +268,12 @@ describe('Strapi', () => {
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         const fetchSpy = jest.spyOn(MockHttpClient.prototype, 'fetch');
 
@@ -272,12 +302,17 @@ describe('Strapi', () => {
       ])('should throw an HTTP exception on %s error', async (_name, status, error) => {
         // Arrange
         const path = '/homepage';
-        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         jest
           .spyOn(MockHttpClient.prototype, 'fetch')
@@ -295,14 +330,19 @@ describe('Strapi', () => {
         const config = {
           baseURL: 'https://localhost:1337/api',
           auth: { strategy: MockAuthProvider.identifier },
-        } satisfies StrapiConfig;
+        } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
         const authenticateSpy = jest.spyOn(MockAuthManager.prototype, 'authenticate');
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         // Act
         await client.fetch('/');
@@ -316,14 +356,19 @@ describe('Strapi', () => {
         const config = {
           baseURL: 'https://localhost:1337/api',
           auth: { strategy: MockAuthProvider.identifier },
-        } satisfies StrapiConfig;
+        } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
         const authenticateRequestSpy = jest.spyOn(MockAuthManager.prototype, 'authenticateRequest');
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         // Act
         await client.fetch('/');
@@ -340,14 +385,19 @@ describe('Strapi', () => {
 
       it(`shouldn't authenticates outgoing HTTP requests if no auth strategy is set`, async () => {
         // Arrange
-        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+        const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
         const authenticateRequestSpy = jest.spyOn(MockAuthManager.prototype, 'authenticateRequest');
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         // Act
         await client.fetch('/');
@@ -367,12 +417,17 @@ describe('Strapi', () => {
         const config = {
           baseURL: 'https://localhost:1337/api',
           auth: { strategy: MockAuthProvider.identifier },
-        } satisfies StrapiConfig;
+        } satisfies StrapiClientConfig;
 
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+        const client = new StrapiClient(
+          config,
+          mockValidator,
+          mockAuthManager,
+          mockHttpClientFactory
+        );
 
         const spies = {
           authenticate: jest.spyOn(MockAuthManager.prototype, 'authenticate'),
@@ -401,13 +456,13 @@ describe('Strapi', () => {
 
   it('should fetch data correctly with fetch method', async () => {
     // Arrange
-    const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+    const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
     const requestSpy = jest.spyOn(MockHttpClient.prototype, 'request');
 
     const mockValidator = new MockStrapiConfigValidator();
     const mockAuthManager = new MockAuthManager();
-    const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+    const client = new StrapiClient(config, mockValidator, mockAuthManager, mockHttpClientFactory);
 
     // Act
     const response = await client.fetch('/data');
@@ -419,12 +474,12 @@ describe('Strapi', () => {
 
   it('should retrieve baseURL correctly from config', () => {
     // Arrange
-    const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiConfig;
+    const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
     const mockValidator = new MockStrapiConfigValidator();
     const mockAuthManager = new MockAuthManager();
 
-    const client = new Strapi(config, mockValidator, mockAuthManager, mockHttpClientFactory);
+    const client = new StrapiClient(config, mockValidator, mockAuthManager, mockHttpClientFactory);
 
     // Act
     const { baseURL } = client;

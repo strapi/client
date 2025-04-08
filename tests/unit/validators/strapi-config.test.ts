@@ -1,7 +1,7 @@
-import { StrapiValidationError, URLValidationError } from '../../../src';
+import { StrapiValidationError, URLValidationError } from '../../../src/errors';
 import { StrapiConfigValidator, URLValidator } from '../../../src/validators';
 
-import type { StrapiConfig } from '../../../src/client';
+import type { StrapiClientConfig } from '../../../src/client';
 
 describe('Strapi Config Validator', () => {
   let urlValidatorMock: jest.Mocked<URLValidator>;
@@ -22,7 +22,7 @@ describe('Strapi Config Validator', () => {
         );
 
         // Act & Assert
-        expect(() => validator.validateConfig(config as StrapiConfig)).toThrow(expected);
+        expect(() => validator.validateConfig(config as StrapiClientConfig)).toThrow(expected);
       }
     );
 
@@ -40,7 +40,7 @@ describe('Strapi Config Validator', () => {
     it('should call validateBaseURL method with the baseURL', () => {
       // Arrange
       const validator = new StrapiConfigValidator(urlValidatorMock);
-      const config: StrapiConfig = { baseURL: 'http://valid.url' };
+      const config: StrapiClientConfig = { baseURL: 'http://valid.url' };
 
       // Act
       validator.validateConfig(config);

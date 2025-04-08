@@ -1,5 +1,5 @@
-import { StrapiError } from '../../../src';
 import { AuthProviderFactory } from '../../../src/auth';
+import { StrapiError } from '../../../src/errors';
 import { MockAuthProvider } from '../mocks';
 
 describe('AuthProviderFactory', () => {
