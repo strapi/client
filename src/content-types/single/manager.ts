@@ -1,8 +1,9 @@
 import createDebug from 'debug';
 
 import { HttpClient } from '../../http';
-import { BaseQueryParams, GenericDocumentResponse } from '../../types/content-api';
 import { URLHelper } from '../../utilities';
+
+import type * as API from '../../types/content-api';
 
 const debug = createDebug('strapi:ct:single');
 
@@ -60,7 +61,7 @@ export class SingleTypeManager {
    * const localizedHomepage = await homepageManager.find({ locale: 'es' });
    * ```
    */
-  async find(queryParams?: BaseQueryParams): Promise<GenericDocumentResponse> {
+  async find(queryParams?: API.BaseQueryParams): Promise<API.DocumentResponse> {
     debug('finding document for %o', this._singularName);
 
     let path = `/${this._singularName}`;
@@ -103,8 +104,8 @@ export class SingleTypeManager {
    */
   async update(
     data: Record<string, any>,
-    queryParams?: BaseQueryParams
-  ): Promise<GenericDocumentResponse> {
+    queryParams?: API.BaseQueryParams
+  ): Promise<API.DocumentResponse> {
     debug('updating document for %o', this._singularName);
 
     let url = `/${this._singularName}`;
@@ -150,7 +151,7 @@ export class SingleTypeManager {
    * @see HttpClient
    * @see URLHelper.appendQueryParams
    */
-  async delete(queryParams?: BaseQueryParams): Promise<void> {
+  async delete(queryParams?: API.BaseQueryParams): Promise<void> {
     debug('deleting document for %o', this._singularName);
 
     let url = `/${this._singularName}`;

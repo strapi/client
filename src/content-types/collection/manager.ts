@@ -1,12 +1,9 @@
 import createDebug from 'debug';
 
 import { HttpClient } from '../../http';
-import {
-  GenericDocumentResponse,
-  GenericMultiDocumentResponse,
-  BaseQueryParams,
-} from '../../types/content-api';
 import { URLHelper } from '../../utilities';
+
+import type * as API from '../../types/content-api';
 
 const debug = createDebug('strapi:ct:collection');
 
@@ -64,7 +61,7 @@ export class CollectionTypeManager {
    * console.log(articles);
    * ```
    */
-  async find(queryParams?: BaseQueryParams): Promise<GenericMultiDocumentResponse> {
+  async find(queryParams?: API.BaseQueryParams): Promise<API.DocumentResponseCollection> {
     debug('finding documents for %o', this._pluralName);
 
     let url = `/${this._pluralName}`;
@@ -105,8 +102,8 @@ export class CollectionTypeManager {
    */
   async findOne(
     documentID: string,
-    queryParams?: BaseQueryParams
-  ): Promise<GenericDocumentResponse> {
+    queryParams?: API.BaseQueryParams
+  ): Promise<API.DocumentResponse> {
     debug('finding a document for %o with id: %o', this._pluralName, documentID);
 
     let url = `/${this._pluralName}/${documentID}`;
@@ -142,8 +139,8 @@ export class CollectionTypeManager {
    */
   async create(
     data: Record<string, any>,
-    queryParams?: BaseQueryParams
-  ): Promise<GenericDocumentResponse> {
+    queryParams?: API.BaseQueryParams
+  ): Promise<API.DocumentResponse> {
     debug('creating a document for %o', this._pluralName);
 
     let url = `/${this._pluralName}`;
@@ -194,8 +191,8 @@ export class CollectionTypeManager {
   async update(
     documentID: string,
     data: Record<string, unknown>,
-    queryParams?: BaseQueryParams
-  ): Promise<GenericDocumentResponse> {
+    queryParams?: API.BaseQueryParams
+  ): Promise<API.DocumentResponse> {
     debug('updating a document for %o with id: %o', this._pluralName, documentID);
 
     let url = `/${this._pluralName}/${documentID}`;
@@ -240,7 +237,7 @@ export class CollectionTypeManager {
    * );
    * ```
    */
-  async delete(documentID: string, queryParams?: BaseQueryParams): Promise<void> {
+  async delete(documentID: string, queryParams?: API.BaseQueryParams): Promise<void> {
     debug('deleting a document for %o with id: %o', this._pluralName, documentID);
 
     let url = `/${this._pluralName}/${documentID}`;

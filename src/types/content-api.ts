@@ -1,28 +1,30 @@
-interface DocumentData {
+export interface Document {
   documentId: string;
   createdAt: string;
   updatedAt: string;
   [key: string]: any;
 }
 
-interface Pagination {
+export interface Pagination {
   page: number;
   pageSize: number;
   pageCount: number;
   total: number;
 }
 
-interface Meta {
+export interface ResponseMeta {
   pagination?: Pagination;
 }
 
-interface GenericResponse<T> {
+export interface DocumentResponse<T extends Document = Document> {
   data: T;
-  meta: Meta;
+  meta: ResponseMeta;
 }
 
-export type GenericDocumentResponse = GenericResponse<DocumentData>;
-export type GenericMultiDocumentResponse = GenericResponse<DocumentData[]>;
+export interface DocumentResponseCollection<T extends Document = Document> {
+  data: T[];
+  meta: ResponseMeta;
+}
 
 /**
  * Defines the structure of query parameters supported for Strapi content API requests.
