@@ -192,7 +192,7 @@ describe('Strapi', () => {
 
       // Assert
       expect(collection).toBeInstanceOf(CollectionTypeManager);
-      expect(collection).toHaveProperty('_pluralName', resource);
+      expect(collection).toHaveProperty('_options', { resource });
     });
   });
 
@@ -217,7 +217,7 @@ describe('Strapi', () => {
 
       // Assert
       expect(single).toBeInstanceOf(SingleTypeManager);
-      expect(single).toHaveProperty('_singularName', resource);
+      expect(single).toHaveProperty('_options', { resource });
     });
   });
 

@@ -40,8 +40,8 @@
      - [API Token Authentication](#api-token-authentication)
 3. [API Reference](#-api-reference)
 4. [Resource Managers](#-resource-managers)
-   - [`.collection()`](#collectionresource)
-   - [`.single()`](#singleresource)
+   - [`.collection()`](#collectionresource-options)
+   - [`.single()`](#singleresource-options)
    - [`.files`](#files)
 5. [Debug](#-debug)
 6. [Demo Projects](#-demo-projects)
@@ -123,18 +123,23 @@ const client = strapi({
 The Strapi client library instance provides key properties and utility methods for content and API interaction:
 
 - **`baseURL`**: base URL of your Strapi backend.
-- **`fetch`**: perform generic requests to the Strapi Content API using fetch-like syntax.
-- **`.collection(resource: string)`**: get a manager instance for handling collection-type resources.
-- **`.single(resource: string)`**: get a manager instance for handling single-type resources.
+- **`fetch()`**: perform generic requests to the Strapi Content API using fetch-like syntax.
+- **`collection()`**: get a manager instance for handling collection-type resources.
+- **`single()`**: get a manager instance for handling single-type resources.
+- **`files`**: access the files manager instance for handling common files operations.
 
 ## 📁 Resource Managers
 
-### `.collection(resource)`
+### `.collection(resource, [options])`
 
 The `.collection()` method provides a manager for working with collection-type resources,
 which can have multiple entries.
 
-**Note**: the `resource` corresponds to the plural name of your collection type, as defined in the Strapi model.
+#### Params
+
+- `resource`: `string` - plural name of your collection type, as defined in the Strapi model
+- `[options]`: `object` - additional options to pass to the collection type manager
+  - `[path]`: `string` - optional root path override for the manager's queries
 
 #### Available Methods:
 
@@ -168,11 +173,21 @@ const updatedArticle = await articles.update('article-document-id', { title: 'Up
 await articles.delete('article-id');
 ```
 
-### `.single(resource)`
+You can also customize the root path for requests by providing a value for the `path` option:
+
+```typescript
+const articles = client.collection('articles', { path: '/my-custom-path' });
+```
+
+### `.single(resource, [options])`
 
 The `.single()` method provides a manager for working with single-type resources, which have only one entry.
 
-**Note**: the `resource` corresponds to the singular name of your collection type, as defined in the Strapi model.
+#### Params
+
+- `resource`: `string` - singular name of your single type, as defined in the Strapi model
+- `[options]`: `object` - additional options to pass to the single type manager
+  - `[path]`: `string` - optional root path override for the manager's queries
 
 #### Available Methods:
 
@@ -201,9 +216,15 @@ const updatedHomepage = await homepage.update(
 await homepage.delete();
 ```
 
-### .files
+You can also customize the root path for requests by providing a value for the `path` option:
 
-The `files` property provides access to the Strapi Media Library through the Upload plugin. It allows you to retrieve files metadata without directly interacting with the REST API.
+```typescript
+const homepage = client.single('homepage', { path: '/my-custom-path' });
+```
+
+### `.files`
+
+The `files` property provides access to the Strapi Media Library through the Upload plugin. It allows you to retrieve files metadata without directly interacting with the REST API manually.
 
 #### Methods
 
@@ -212,7 +233,9 @@ The `files` property provides access to the Strapi Media Library through the Upl
 - `update(fileId: number, fileInfo: FileUpdateData): Promise<FileResponse>` - Updates metadata for an existing file
 - `delete(fileId: number): Promise<void>` - Deletes a file by its ID
 
-#### Example: Finding Files
+#### Examples
+
+**Finding all files**
 
 ```typescript
 // Initialize the client
@@ -235,7 +258,7 @@ const imageFiles = await client.files.find({
 });
 ```
 
-#### Example: Finding a Single File
+**Finding a Single File**
 
 ```typescript
 // Initialize the client
@@ -252,7 +275,7 @@ console.log(file.url); // The file URL
 console.log(file.mime); // The file MIME type
 ```
 
-#### Example: Updating File Metadata
+**Updating File Metadata**
 
 ```typescript
 // Initialize the client
@@ -272,7 +295,7 @@ console.log(updatedFile.name); // Updated file name
 console.log(updatedFile.alternativeText); // Updated alt text
 ```
 
-#### Example: Deleting a File
+**Deleting a File**
 
 ```typescript
 // Initialize the client
@@ -353,6 +376,7 @@ This repository includes demo projects located in the `/demo` directory to help 
 - **`demo/node-typescript`**: a Node.js project using TypeScript.
 - **`demo/node-javascript`**: a Node.js project using JavaScript.
 - **`demo/next-server-components`**: a Next.js project using TypeScript and server components.
+- **`demo/react-vite`**: a React project using Vite and TypeScript
 
 ### Using Demo Commands
 
