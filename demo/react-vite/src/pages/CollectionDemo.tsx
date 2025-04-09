@@ -7,6 +7,7 @@ import { Layout } from '@/layouts/Layout.tsx';
 import type { Category, QueryParam } from '@/types.ts';
 import { DEFAULT_COLLECTION_QUERIES } from '@/utils/constants.ts';
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 
 export const CollectionDemo: React.FC = () => {
   const categories = useCollection('categories');
@@ -31,8 +32,9 @@ export const CollectionDemo: React.FC = () => {
     try {
       const { data } = await categories.find(query);
       setDocuments(data as unknown as Category[]);
+      toast.success(`${data.length} categories fetched successfully`);
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      toast.error(error instanceof Error ? error.message : `${error}`);
     }
   };
 
