@@ -1,15 +1,15 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @tailwind utilities;
 
-@theme(dark) {
+@theme (dark) {
   /* Neon Colors */
   --neon-pink: #ff2d76;
   --neon-blue: #00f9ff;
   --neon-purple: #b537f2;
   --neon-green: #3fff00;
   --neon-yellow: #ffff00;
-  --neon-orange: #FF675E;
+  --neon-orange: #ff675e;
 
   /* Dark Theme Base Colors */
   --bg-primary: #0a0a1f;
@@ -20,7 +20,9 @@
 }
 
 @layer base {
-  *, *::before, *::after {
+  *,
+  *::before,
+  *::after {
     box-sizing: border-box;
   }
 
@@ -33,7 +35,8 @@
     padding: 0;
   }
 
-  html, body {
+  html,
+  body {
     @apply bg-[var(--bg-primary)] text-[var(--text-primary)];
 
     font-family: 'Inter', system-ui, sans-serif;
@@ -43,4 +46,3 @@
     min-height: 100vh;
   }
 }
-
