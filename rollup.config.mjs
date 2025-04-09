@@ -10,22 +10,16 @@ const isProduction = process.env.NODE_ENV === 'production';
  * This configuration is designed to bundle the Strapi Client for Node.js environments.
  *
  * It produces two outputs: one for the older CommonJS module system and one for the modern ES Module
- * system, ensuring compatibility with a wide range of tools and runtimes.
+ * system.
  *
  * Outputs:
  * - CommonJS (dist/bundle.cjs): for environments using `require`.
- * Compatible with older tools and Node.js versions.
- * Includes source maps for debugging.
+ *   Compatible with older tools and Node.js versions.
+ *   Includes source maps for debugging.
  *
- * - ES Module (dist/bundle.esm): for modern import/export environments.
- * Supports tree-shaking for smaller builds and also includes source maps.
- *
- * Plugins Used:
- * - `nodeResolve`: resolves third-party and core Node.js modules from node_modules.
- * - `commonjs`: converts CommonJS modules (for example, from dependencies) to ES modules for bundling.
- * - `typescript`: transpiles TypeScript code into JavaScript for broad compatibility.
- * - `replace`: replaces process.env variables like NODE_ENV during the build, enabling environment-specific behavior.
- * - `terser`: minifies the output in production mode, reducing file size for better performance.
+ * - ES Module (dist/bundle.mjs): for modern import/export environments.
+ *   Supports tree-shaking for smaller builds.
+ *   Includes source maps for debugging.
  *
  * @type {import('rollup').RollupOptions}
  */
@@ -48,22 +42,23 @@ const node_build = {
       exports: 'named',
     },
   ],
+  external: ['debug'],
   plugins: [
     // Locate modules using the Node resolution algorithm, for using third party modules in node_modules
     nodeResolve({
-      browser: true, // Only resolve browser-compatible modules
+      browser: false, // "browser" properties in package files are ignored
       preferBuiltins: true, // Prefer built-in modules
     }),
     // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
     commonjs(),
-    // Transpile
+    // Transpile TypeScript to JavaScript
     typescript({ tsconfig: './tsconfig.build.json' }),
-    // Set env and global variables for browser builds
+    // Replace environment variables
     replace({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       preventAssignment: true,
     }),
-    // Only minify in production
+    // Minify the output in production
     isProduction && terser(),
   ],
 };
@@ -71,21 +66,11 @@ const node_build = {
 /**
  * This configuration is designed to bundle the Strapi Client for browser environments.
  *
- * It outputs using the IIFE format, which is suitable for use in web browsers.
- *
- * The bundle provides a globally available `strapi` variable and includes source maps for debugging.
- *
- * The bundle is minified for better performance.
+ * It produces outputs suitable for browser environments in both CommonJS and ESM formats.
  *
  * Outputs:
- * - IIFE Minified (dist/bundle.browser.min.js): a minified browser build, optimized for performance, with source maps.
- *
- * Plugins Used:
- * - `nodeResolve`: resolves browser-compatible modules from `node_modules` while ignoring Node.js built-ins.
- * - `commonjs`: converts CommonJS modules (for example, dependencies) to ES modules for bundling.
- * - `typescript`: transpiles TypeScript code into JavaScript to ensure compatibility with browsers.
- * - `replace`: replaces `process.env` variables and includes a `process.browser` variable for browser-specific code.
- * - `terser`: minifies the production output to improve loading performance and reduce file size.
+ * - CommonJS (dist/bundle.browser.cjs): for environments using `require`.
+ * - ES Module (dist/bundle.browser.mjs): for environments with native support for ES Modules.
  *
  * @type {import('rollup').RollupOptions}
  */
@@ -93,8 +78,61 @@ const browser_build = {
   input: 'src/exports.ts',
   cache: true,
   output: [
+    // CommonJS Browser build
     {
-      file: 'dist/bundle.browser.min.js',
+      file: 'dist/bundle.browser.cjs',
+      format: 'cjs',
+      sourcemap: isProduction ? 'hidden' : true,
+      exports: 'named',
+    },
+    // ESM Browser build
+    {
+      file: 'dist/bundle.browser.mjs',
+      format: 'esm',
+      sourcemap: isProduction ? 'hidden' : true,
+      exports: 'named',
+    },
+  ],
+  external: ['debug'],
+  plugins: [
+    // Locate modules using the Node resolution algorithm, for using third party modules in node_modules
+    nodeResolve({
+      browser: true, // Only resolve browser-compatible modules
+      preferBuiltins: false, // Disable Node.js built-ins
+    }),
+    // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
+    commonjs(),
+    // Transpile TypeScript to JavaScript
+    typescript({ tsconfig: './tsconfig.build.json' }),
+    // Replace environment variables and add process.browser
+    replace({
+      'process.browser': true,
+      preventAssignment: true,
+    }),
+    // Minify the output in production
+    isProduction && terser(),
+  ],
+};
+
+/**
+ * This configuration is designed to create IIFE format bundles suitable for direct
+ * inclusion in web browsers.
+ *
+ * Outputs:
+ * - IIFE Minified (dist/bundle.browser.min.js): Minified JavaScript file containing the entire bundle, optimized
+ *   for direct browser usage and embedding, exposed with the global `strapi` variable.
+ *
+ * External Dependencies:
+ * - `debug` is excluded from the bundle and replaced with a no-op function.
+ *
+ * @type {import('rollup').RollupOptions}
+ */
+const iife_build = {
+  input: 'src/exports.ts',
+  cache: true,
+  output: [
+    {
+      file: 'dist/bundle.iife.min.js',
       format: 'iife',
       name: 'strapi',
       sourcemap: true,
@@ -112,17 +150,18 @@ const browser_build = {
     }),
     // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
     commonjs(),
-    // Transpile
+    // Transpile TypeScript to JavaScript
     typescript({ tsconfig: './tsconfig.build.json' }),
-    // Set env and global variables for browser builds
+    // Replace environment variables and add process.browser for browser-specific code
     replace({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
       'process.browser': true,
       preventAssignment: true,
     }),
+    // Minify the output
     terser(),
   ],
 };
 
 // Export configurations
-export default [node_build, browser_build];
+export default [node_build, browser_build, iife_build];
