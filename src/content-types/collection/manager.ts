@@ -2,8 +2,10 @@ import createDebug from 'debug';
 
 import { HttpClient } from '../../http';
 import { URLHelper } from '../../utilities';
+import { AbstractContentTypeManager } from '../abstract';
 
 import type * as API from '../../types/content-api';
+import type { ContentTypeManagerOptions } from '../abstract';
 
 const debug = createDebug('strapi:ct:collection');
 
@@ -17,14 +19,11 @@ const debug = createDebug('strapi:ct:collection');
  * - All operations use the resource's plural name to construct the API endpoint.
  * - It also supports optional query parameters for filtering, sorting, pagination, etc.
  */
-export class CollectionTypeManager {
-  private readonly _pluralName: string;
-  private readonly _httpClient: HttpClient;
-
+export class CollectionTypeManager extends AbstractContentTypeManager {
   /**
    * Creates an instance of {@link CollectionTypeManager}`.
    *
-   * @param pluralName - The singular name of the single-type resource as defined in the Strapi app.
+   * @param options - Configuration options, including the plural name of the resource as defined in the Strapi app.
    * @param httpClient - An instance of {@link HttpClient} to handle HTTP communication.
    *
    * @example
@@ -33,11 +32,10 @@ export class CollectionTypeManager {
    * const articlesManager = new CollectionTypeManager('articles', httpClient);
    * ```
    */
-  constructor(pluralName: string, httpClient: HttpClient) {
-    this._pluralName = pluralName;
-    this._httpClient = httpClient;
+  constructor(options: ContentTypeManagerOptions, httpClient: HttpClient) {
+    super(options, httpClient);
 
-    debug('initialized manager for %o', pluralName);
+    debug('initialized a new "collection" manager with %o', options);
   }
 
   /**
@@ -62,9 +60,9 @@ export class CollectionTypeManager {
    * ```
    */
   async find(queryParams?: API.BaseQueryParams): Promise<API.DocumentResponseCollection> {
-    debug('finding documents for %o', this._pluralName);
+    debug('finding documents for %o', this._resource);
 
-    let url = `/${this._pluralName}`;
+    let url = this._rootPath;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -73,7 +71,7 @@ export class CollectionTypeManager {
     const response = await this._httpClient.get(url);
     const json = await response.json();
 
-    debug('found %o %o documents', Number(json?.data?.length), this._pluralName);
+    debug('found %o %o documents', Number(json?.data?.length), this._resource);
 
     return json;
   }
@@ -104,9 +102,9 @@ export class CollectionTypeManager {
     documentID: string,
     queryParams?: API.BaseQueryParams
   ): Promise<API.DocumentResponse> {
-    debug('finding a document for %o with id: %o', this._pluralName, documentID);
+    debug('finding a document for %o with id: %o', this._resource, documentID);
 
-    let url = `/${this._pluralName}/${documentID}`;
+    let url = `${this._rootPath}/${documentID}`;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -114,7 +112,7 @@ export class CollectionTypeManager {
 
     const response = await this._httpClient.get(url);
 
-    debug('found the %o document with document id %o', this._pluralName, documentID);
+    debug('found the %o document with document id %o', this._resource, documentID);
 
     return response.json();
   }
@@ -141,9 +139,9 @@ export class CollectionTypeManager {
     data: Record<string, any>,
     queryParams?: API.BaseQueryParams
   ): Promise<API.DocumentResponse> {
-    debug('creating a document for %o', this._pluralName);
+    debug('creating a document for %o', this._resource);
 
-    let url = `/${this._pluralName}`;
+    let url = this._rootPath;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -157,7 +155,7 @@ export class CollectionTypeManager {
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    debug('created the %o document', this._pluralName);
+    debug('created the %o document', this._resource);
 
     return response.json();
   }
@@ -193,9 +191,9 @@ export class CollectionTypeManager {
     data: Record<string, unknown>,
     queryParams?: API.BaseQueryParams
   ): Promise<API.DocumentResponse> {
-    debug('updating a document for %o with id: %o', this._pluralName, documentID);
+    debug('updating a document for %o with id: %o', this._resource, documentID);
 
-    let url = `/${this._pluralName}/${documentID}`;
+    let url = `${this._rootPath}/${documentID}`;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -209,7 +207,7 @@ export class CollectionTypeManager {
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    debug('updated the %o document with id %o', this._pluralName, documentID);
+    debug('updated the %o document with id %o', this._resource, documentID);
 
     return response.json();
   }
@@ -238,9 +236,9 @@ export class CollectionTypeManager {
    * ```
    */
   async delete(documentID: string, queryParams?: API.BaseQueryParams): Promise<void> {
-    debug('deleting a document for %o with id: %o', this._pluralName, documentID);
+    debug('deleting a document for %o with id: %o', this._resource, documentID);
 
-    let url = `/${this._pluralName}/${documentID}`;
+    let url = `${this._rootPath}/${documentID}`;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -248,6 +246,6 @@ export class CollectionTypeManager {
 
     await this._httpClient.delete(url);
 
-    debug('deleted the %o document with id %o', this._pluralName, documentID);
+    debug('deleted the %o document with id %o', this._resource, documentID);
   }
 }
