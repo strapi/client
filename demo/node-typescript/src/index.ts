@@ -1,4 +1,4 @@
-import { strapi } from '@strapi/client';
+import { strapi, type API } from '@strapi/client';
 import * as dotenv from 'dotenv';
 import * as os from 'os';
 dotenv.config();
@@ -11,14 +11,14 @@ console.log('Running with api token ' + api_token);
 const client = strapi({ baseURL: 'http://localhost:1337/api', auth: api_token });
 
 // Type definitions based on the actual response structure
-interface CategoryImage {
+interface CategoryImage extends API.Document {
   id: number;
   name: string;
-  alternativeText: string | null;
-  caption: string | null;
+  alternativeText?: string;
+  caption?: string;
   width: number;
   height: number;
-  formats: Record<string, unknown>;
+  formats?: Record<string, unknown>;
   hash: string;
   ext: string;
   mime: string;
@@ -26,50 +26,17 @@ interface CategoryImage {
   url: string;
   previewUrl: string | null;
   provider: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
-interface Category {
+interface Category extends API.Document {
   id: number;
   name: string;
   slug: string;
   image?: CategoryImage;
-  createdAt: string;
-  updatedAt: string;
   publishedAt: string | null;
 }
 
-interface CategoryResponse {
-  data: Category[];
-  meta: {
-    pagination: {
-      page: number;
-      pageSize: number;
-      pageCount: number;
-      total: number;
-    };
-  };
-}
-
-interface FileAttributes {
-  id: number;
-  name: string;
-  alternativeText: string | null;
-  caption: string | null;
-  width: number;
-  height: number;
-  formats: Record<string, unknown>;
-  hash: string;
-  ext: string;
-  mime: string;
-  size: number;
-  url: string;
-  previewUrl: string | null;
-  provider: string;
-  createdAt: string;
-  updatedAt: string;
-}
+type CategoryResponseCollection = API.DocumentResponseCollection<Category>;
 
 async function runDemo() {
   await demonstrateBasicCategoryFunctionality();
@@ -86,7 +53,7 @@ async function demonstrateBasicCategoryFunctionality() {
 
   const categories = client.collection('categories');
 
-  const categoryDocs = (await categories.find()) as unknown as CategoryResponse;
+  const categoryDocs = (await categories.find()) as CategoryResponseCollection;
 
   console.log(`Found ${categoryDocs.data.length} categories:`);
   categoryDocs.data.forEach((category) => {
@@ -104,7 +71,7 @@ async function demonstrateCategoryImageInteractions() {
   // Fetch all categories with their related images
   const result = (await categories.find({
     populate: ['image'],
-  })) as unknown as CategoryResponse;
+  })) as CategoryResponseCollection;
 
   for (const category of result.data) {
     console.log(`Category: ${category.name}`);
@@ -136,7 +103,7 @@ async function demonstrateDirectFileOperations() {
       },
     },
     populate: ['image'],
-  })) as unknown as CategoryResponse;
+  })) as CategoryResponseCollection;
 
   if (techCategoryResult.data && techCategoryResult.data.length > 0) {
     const categoryData = techCategoryResult.data[0];
@@ -147,7 +114,7 @@ async function demonstrateDirectFileOperations() {
       const imageId = categoryData.image.id;
 
       // Get the specific file by ID
-      const fileInfo = (await client.files.findOne(imageId)) as unknown as FileAttributes;
+      const fileInfo = await client.files.findOne(imageId);
 
       console.log(os.EOL);
       console.log('File details:');
@@ -178,7 +145,7 @@ async function demonstrateFileUpdates() {
       },
     },
     populate: ['image'],
-  })) as unknown as CategoryResponse;
+  })) as CategoryResponseCollection;
 
   if (techCategoryResult.data && techCategoryResult.data.length > 0) {
     const categoryData = techCategoryResult.data[0];

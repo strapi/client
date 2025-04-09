@@ -23,6 +23,7 @@ export * from './errors';
 export type { StrapiClientConfig, StrapiClient } from './client';
 export type { CollectionTypeManager, SingleTypeManager } from './content-types';
 export type { FilesManager, FileQueryParams, FileResponse, FileListResponse } from './files';
+export type * as API from './types/content-api';
 
 // ############################
 // #    Deprecated symbols    #
