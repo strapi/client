@@ -307,6 +307,8 @@ async function createDefaultAPITokens() {
     const envKey = `${tokenType.type.toUpperCase().replace('-', '_')}_TOKEN`;
 
     for (const envPath of envPaths) {
+      fse.ensureFileSync(envPath);
+
       updateEnvFile(envPath, envKey, token.accessKey);
     }
   }
