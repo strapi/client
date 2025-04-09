@@ -1,7 +1,7 @@
 import { ApiTokenAuthProvider } from './auth';
-import { Strapi } from './client';
+import { StrapiClient } from './client';
 
-import type { StrapiConfig } from './client';
+import type { StrapiClientConfig } from './client';
 
 export interface Config {
   /**
@@ -78,7 +78,7 @@ export interface Config {
 export const strapi = (config: Config) => {
   const { baseURL, auth } = config;
 
-  const clientConfig: StrapiConfig = { baseURL };
+  const clientConfig: StrapiClientConfig = { baseURL };
 
   // In this factory, while there is only one auth strategy available, users can't manually set the strategy options.
   // Since the client constructor needs to define a proper strategy,
@@ -90,14 +90,5 @@ export const strapi = (config: Config) => {
     };
   }
 
-  return new Strapi(clientConfig);
+  return new StrapiClient(clientConfig);
 };
-
-// Error classes
-export * from './errors';
-
-// Public types and interfaces
-export type { StrapiConfig, Strapi } from './client';
-export type { CollectionTypeManager, SingleTypeManager } from './content-types';
-export type { FilesManager, FileQueryParams, FileResponse, FileListResponse } from './files';
-export type * as API from './types/content-api';

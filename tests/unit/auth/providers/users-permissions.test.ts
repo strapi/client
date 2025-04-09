@@ -1,8 +1,8 @@
-import { HTTPBadRequestError, StrapiValidationError } from '../../../../src';
 import {
   UsersPermissionsAuthProvider,
   UsersPermissionsAuthProviderOptions,
 } from '../../../../src/auth';
+import { HTTPBadRequestError, StrapiValidationError } from '../../../../src/errors';
 import { MockHttpClient, mockRequest, mockResponse } from '../../mocks';
 
 const FAKE_TOKEN = '<token>';

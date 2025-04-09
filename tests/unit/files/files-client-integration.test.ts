@@ -1,10 +1,10 @@
-import { Strapi } from '../../../src/client';
+import { StrapiClient } from '../../../src/client';
 import { HTTPNotFoundError } from '../../../src/errors';
 import { FileNotFoundError } from '../../../src/files';
 import { mockFile, mockFiles } from '../../fixtures/files';
 
 describe('Strapi Client - Files Integration', () => {
-  let strapi: Strapi;
+  let strapi: StrapiClient;
   let mockFetch: jest.Mock;
 
   beforeEach(() => {
@@ -13,7 +13,7 @@ describe('Strapi Client - Files Integration', () => {
     jest.spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
 
     // Create a new Strapi client instance
-    strapi = new Strapi({
+    strapi = new StrapiClient({
       baseURL: 'http://example.com/api',
     });
   });
@@ -80,7 +80,7 @@ describe('Strapi Client - Files Integration', () => {
       });
 
       // Create an authenticated Strapi client
-      const authenticatedStrapi = new Strapi({
+      const authenticatedStrapi = new StrapiClient({
         baseURL: 'http://example.com/api',
         auth: {
           strategy: 'api-token',
@@ -161,7 +161,7 @@ describe('Strapi Client - Files Integration', () => {
       });
 
       // Create an authenticated Strapi client
-      const authenticatedStrapi = new Strapi({
+      const authenticatedStrapi = new StrapiClient({
         baseURL: 'http://example.com/api',
         auth: {
           strategy: 'api-token',
@@ -247,7 +247,7 @@ describe('Strapi Client - Files Integration', () => {
       });
 
       // Create an authenticated Strapi client
-      const authenticatedStrapi = new Strapi({
+      const authenticatedStrapi = new StrapiClient({
         baseURL: 'http://example.com/api',
         auth: {
           strategy: 'api-token',

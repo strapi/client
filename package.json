@@ -27,15 +27,17 @@
       "url": "https://strapi.io"
     }
   ],
-  "browser": "./dist/bundle.browser.min.js",
+  "browser": "./dist/bundle.browser.iife.min.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "require": "./dist/bundle.cjs",
-      "import": "./dist/bundle.mjs",
+      "types": "./dist/exports.d.ts",
       "browser": {
-        "import": "./dist/bundle.browser.min.js",
-        "require": "./dist/bundle.browser.min.js"
+        "import": "./dist/bundle.browser.mjs",
+        "require": "./dist/bundle.browser.cjs"
+      },
+      "node": {
+        "require": "./dist/bundle.cjs",
+        "import": "./dist/bundle.mjs"
       }
     },
     "./package.json": "./package.json"

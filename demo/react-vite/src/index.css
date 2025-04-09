@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+
+@tailwind utilities;
+
+@theme (dark) {
+  /* Neon Colors */
+  --neon-pink: #ff2d76;
+  --neon-blue: #00f9ff;
+  --neon-purple: #b537f2;
+  --neon-green: #3fff00;
+  --neon-yellow: #ffff00;
+  --neon-orange: #ff675e;
+
+  /* Dark Theme Base Colors */
+  --bg-primary: #0a0a1f;
+  --bg-secondary: #13132b;
+  --bg-tertiary: #1c1c3b;
+  --text-primary: #ffffff;
+  --text-secondary: #a0a0c0;
+}
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  *:focus {
+    outline: none;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  html,
+  body {
+    @apply bg-[var(--bg-primary)] text-[var(--text-primary)];
+
+    font-family: 'Inter', system-ui, sans-serif;
+    color: var(--text-primary);
+
+    /* Ensure the body takes full height */
+    min-height: 100vh;
+  }
+}

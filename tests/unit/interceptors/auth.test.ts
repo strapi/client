@@ -1,4 +1,4 @@
-import { HTTPAuthorizationError } from '../../../src';
+import { HTTPAuthorizationError } from '../../../src/errors';
 import { AuthInterceptors } from '../../../src/interceptors';
 import { MockAuthManager, MockAuthProvider, MockHttpClient, MockURLValidator } from '../mocks';
 

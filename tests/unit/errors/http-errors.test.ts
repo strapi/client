@@ -6,7 +6,7 @@ import {
   HTTPInternalServerError,
   HTTPNotFoundError,
   HTTPTimeoutError,
-} from '../../../src';
+} from '../../../src/errors';
 import { StatusCode } from '../../../src/http';
 import { mockRequest, mockResponse } from '../mocks';
 
