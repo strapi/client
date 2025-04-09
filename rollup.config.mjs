@@ -51,7 +51,7 @@ const node_build = {
     }),
     // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
     commonjs(),
-    // Transpile TypeScript to JavaScript
+    // Transpile
     typescript({ tsconfig: './tsconfig.build.json' }),
     // Replace environment variables
     replace({
@@ -102,7 +102,7 @@ const browser_build = {
     }),
     // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
     commonjs(),
-    // Transpile TypeScript to JavaScript
+    // Transpile
     typescript({ tsconfig: './tsconfig.build.json' }),
     // Replace environment variables and add process.browser
     replace({
@@ -132,7 +132,7 @@ const iife_build = {
   cache: true,
   output: [
     {
-      file: 'dist/bundle.iife.min.js',
+      file: 'dist/bundle.browser.iife.min.js',
       format: 'iife',
       name: 'strapi',
       sourcemap: true,
@@ -150,7 +150,7 @@ const iife_build = {
     }),
     // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
     commonjs(),
-    // Transpile TypeScript to JavaScript
+    // Transpile
     typescript({ tsconfig: './tsconfig.build.json' }),
     // Replace environment variables and add process.browser for browser-specific code
     replace({
