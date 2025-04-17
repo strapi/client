@@ -62,4 +62,129 @@ describe('Strapi Config Validator', () => {
       expect(() => validator.validateConfig({ baseURL })).toThrow(StrapiValidationError);
     });
   });
+
+  describe('validateHeaders', () => {
+    it('should accept custom headers in the config', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const config: StrapiClientConfig = {
+        baseURL: 'https://example.com',
+        headers: {
+          Authorization: 'Bearer token123',
+          'Custom-Header': 'Custom Value',
+        },
+      };
+
+      // Act & Assert
+      expect(() => validator.validateConfig(config)).not.toThrow();
+    });
+
+    it('should throw StrapiValidationError if headers is not an object', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const baseURL = 'https://example.com';
+      const expected = new StrapiValidationError(new TypeError('Headers must be a valid object.'));
+
+      // Act & Assert
+      expect(() =>
+        validator.validateConfig({
+          baseURL,
+          // @ts-expect-error: Testing invalid headers
+          headers: 'invalid headers',
+        })
+      ).toThrow(expected);
+    });
+
+    it('should validate header values are strings not number', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const baseURL = 'https://example.com';
+      const headers = {
+        'Another-Header': 123,
+      };
+
+      const expected = new StrapiValidationError(new TypeError('Header values must be strings.'));
+
+      // Act & Assert
+      expect(() =>
+        validator.validateConfig({
+          baseURL,
+          // @ts-expect-error - Testing invalid header values
+          headers,
+        })
+      ).toThrow(expected);
+    });
+
+    it('should validate header values are strings not null', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const baseURL = 'https://example.com';
+      const headers = {
+        'Another-Header': null,
+      };
+
+      const expected = new StrapiValidationError(new TypeError('Header values must be strings.'));
+
+      // Act & Assert
+      expect(() =>
+        validator.validateConfig({
+          baseURL,
+          // @ts-expect-error - Testing invalid header values
+          headers,
+        })
+      ).toThrow(expected);
+    });
+
+    it('should validate header values are strings not boolean', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const baseURL = 'https://example.com';
+      const headers = {
+        'Custom-Header': true,
+      };
+
+      const expected = new StrapiValidationError(new TypeError('Header values must be strings.'));
+
+      // Act & Assert
+      expect(() =>
+        validator.validateConfig({
+          baseURL,
+          // @ts-expect-error - Testing invalid header values
+          headers,
+        })
+      ).toThrow(expected);
+    });
+
+    it('should validate header values are strings not undefined', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const baseURL = 'https://example.com';
+      const headers = {
+        'Custom-Header': undefined,
+      };
+
+      const expected = new StrapiValidationError(new TypeError('Header values must be strings.'));
+
+      // Act & Assert
+      expect(() =>
+        validator.validateConfig({
+          baseURL,
+          // @ts-expect-error - Testing invalid header values
+          headers,
+        })
+      ).toThrow(expected);
+    });
+
+    it('should handle empty headers object', () => {
+      // Arrange
+      const validator = new StrapiConfigValidator(urlValidatorMock);
+      const config: StrapiClientConfig = {
+        baseURL: 'https://example.com',
+        headers: {},
+      };
+
+      // Act & Assert
+      expect(() => validator.validateConfig(config)).not.toThrow();
+    });
+  });
 });

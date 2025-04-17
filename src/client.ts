@@ -18,6 +18,9 @@ export interface StrapiClientConfig {
 
   /** Optional authentication configuration, which specifies a strategy and its details. */
   auth?: AuthConfig;
+
+  /** Optional custom headers to include with every request. */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -107,8 +110,8 @@ export class StrapiClient {
     // It could be instantiated before but would throw an invalid URL error
     // instead of the client library itself throwing an initialization exception.
     this._httpClient = httpClientFactory
-      ? httpClientFactory({ baseURL: config.baseURL })
-      : new HttpClient({ baseURL: config.baseURL });
+      ? httpClientFactory({ baseURL: config.baseURL, headers: config.headers })
+      : new HttpClient({ baseURL: config.baseURL, headers: config.headers });
 
     this.files = new FilesManager(this._httpClient);
 
