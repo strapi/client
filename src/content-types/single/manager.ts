@@ -2,8 +2,10 @@ import createDebug from 'debug';
 
 import { HttpClient } from '../../http';
 import { URLHelper } from '../../utilities';
+import { AbstractContentTypeManager } from '../abstract';
 
 import type * as API from '../../types/content-api';
+import type { ContentTypeManagerOptions } from '../abstract';
 
 const debug = createDebug('strapi:ct:single');
 
@@ -17,14 +19,11 @@ const debug = createDebug('strapi:ct:single');
  * - All operations use the resource's singular name to construct the API endpoint.
  * - It also supports optional query parameters for filtering, sorting, pagination, etc.
  */
-export class SingleTypeManager {
-  private readonly _singularName: string;
-  private readonly _httpClient: HttpClient;
-
+export class SingleTypeManager extends AbstractContentTypeManager {
   /**
    * Creates an instance of {@link SingleTypeManager}.
    *
-   * @param singularName - The singular name of the single-type resource as defined in the Strapi app.
+   * @param options - Configuration options, including the singular name of the resource as defined in the Strapi app.
    * @param httpClient - An instance of {@link HttpClient} to handle HTTP communication.
    *
    * @example
@@ -33,11 +32,10 @@ export class SingleTypeManager {
    * const homepageManager = new SingleTypeManager('homepage', httpClient);
    * ```
    */
-  constructor(singularName: string, httpClient: HttpClient) {
-    this._singularName = singularName;
-    this._httpClient = httpClient;
+  constructor(options: ContentTypeManagerOptions, httpClient: HttpClient) {
+    super(options, httpClient);
 
-    debug('initialized manager for %o', singularName);
+    debug('initialized a new "single" manager with %o', options);
   }
 
   /**
@@ -62,9 +60,9 @@ export class SingleTypeManager {
    * ```
    */
   async find(queryParams?: API.BaseQueryParams): Promise<API.DocumentResponse> {
-    debug('finding document for %o', this._singularName);
+    debug('finding document for %o', this._resource);
 
-    let path = `/${this._singularName}`;
+    let path = this._rootPath;
 
     if (queryParams) {
       path = URLHelper.appendQueryParams(path, queryParams);
@@ -72,7 +70,7 @@ export class SingleTypeManager {
 
     const response = await this._httpClient.get(path);
 
-    debug('the %o document has been fetched', this._singularName);
+    debug('the %o document has been fetched', this._resource);
 
     return response.json();
   }
@@ -106,9 +104,9 @@ export class SingleTypeManager {
     data: Record<string, any>,
     queryParams?: API.BaseQueryParams
   ): Promise<API.DocumentResponse> {
-    debug('updating document for %o', this._singularName);
+    debug('updating document for %o', this._resource);
 
-    let url = `/${this._singularName}`;
+    let url = this._rootPath;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -122,7 +120,7 @@ export class SingleTypeManager {
       { headers: { 'Content-Type': 'application/json' } }
     );
 
-    debug('the %o document has been updated', this._singularName);
+    debug('the %o document has been updated', this._resource);
 
     return response.json();
   }
@@ -152,9 +150,9 @@ export class SingleTypeManager {
    * @see URLHelper.appendQueryParams
    */
   async delete(queryParams?: API.BaseQueryParams): Promise<void> {
-    debug('deleting document for %o', this._singularName);
+    debug('deleting document for %o', this._resource);
 
-    let url = `/${this._singularName}`;
+    let url = this._rootPath;
 
     if (queryParams) {
       url = URLHelper.appendQueryParams(url, queryParams);
@@ -162,6 +160,6 @@ export class SingleTypeManager {
 
     await this._httpClient.delete(url);
 
-    debug('the %o document has been deleted', this._singularName);
+    debug('the %o document has been deleted', this._resource);
   }
 }

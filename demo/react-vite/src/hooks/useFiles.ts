@@ -2,6 +2,7 @@ import { useStrapi } from '@/hooks/useStrapi.ts';
 
 import type { File } from '@/types.ts';
 import React from 'react';
+import toast from 'react-hot-toast';
 
 export const useFiles = () => {
   const strapi = useStrapi();
@@ -11,8 +12,9 @@ export const useFiles = () => {
     try {
       const response = await strapi.files.find();
       setFiles(response);
+      toast.success(`${response.length} files fetched successfully`);
     } catch (error) {
-      console.error('Error fetching files:', error);
+      toast.error(error instanceof Error ? error.message : `${error}`);
     }
   };
 
