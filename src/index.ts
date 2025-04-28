@@ -35,8 +35,21 @@ export interface Config {
    *
    * - If excluded, the client operates without authentication.
    */
-
   auth?: string;
+
+  /**
+   * Custom headers to include with every request (optional).
+   *
+   * These headers will be added to all requests made by the client,
+   * but can be overridden by headers specific to individual requests.
+   *
+   * @example
+   * {
+   *   'X-Custom-Header': 'value',
+   *   'Accept-Language': 'en-US'
+   * }
+   */
+  headers?: Record<string, string>;
 }
 
 /**
@@ -76,9 +89,9 @@ export interface Config {
  *                                        or if the auth configuration is invalid.
  */
 export const strapi = (config: Config) => {
-  const { baseURL, auth } = config;
+  const { baseURL, auth, headers } = config;
 
-  const clientConfig: StrapiClientConfig = { baseURL };
+  const clientConfig: StrapiClientConfig = { baseURL, headers };
 
   // In this factory, while there is only one auth strategy available, users can't manually set the strategy options.
   // Since the client constructor needs to define a proper strategy,

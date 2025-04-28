@@ -48,6 +48,7 @@ export class StrapiConfigValidator {
     }
 
     this.validateBaseURL(config.baseURL);
+    this.validateHeaders(config.headers);
 
     debug('validated client config successfully');
   }
@@ -71,5 +72,34 @@ export class StrapiConfigValidator {
 
       throw e;
     }
+  }
+
+  /**
+   * Validates the headers object to ensure it's a plain object with string key-value pairs.
+   *
+   * @param headers - The headers object to validate.
+   *
+   * @throws {StrapiValidationError} If the headers are invalid.
+   */
+  private validateHeaders(headers: unknown) {
+    debug('validating headers');
+
+    if (headers === undefined) {
+      return;
+    }
+
+    if (headers === null || typeof headers !== 'object' || Array.isArray(headers)) {
+      debug(`invalid headers type: %o (%s)`, headers, typeof headers);
+      throw new StrapiValidationError(new TypeError('Headers must be a valid object.'));
+    }
+
+    for (const [key, value] of Object.entries(headers)) {
+      if (typeof value !== 'string') {
+        debug(`invalid header value for key %s: %o (%s)`, key, value, typeof value);
+        throw new StrapiValidationError(new TypeError('Header values must be strings.'));
+      }
+    }
+
+    debug('headers validated successfully');
   }
 }
