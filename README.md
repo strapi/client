@@ -134,7 +134,7 @@ const client = strapi({
 });
 ```
 
-- Custom headers specified in the client configuration are applied to all requests
+Custom headers specified in the client configuration are applied to all requests
 
 **Example: Using Custom Headers**
 
