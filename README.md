@@ -134,11 +134,7 @@ const client = strapi({
 });
 ```
 
-**Header Precedence:**
-
 - Custom headers specified in the client configuration are applied to all requests
-- Authentication headers (e.g., `Authorization` from API tokens) take precedence over custom headers
-- Headers specified in individual requests (e.g., in `fetch()` calls) take precedence over both custom and authentication headers
 
 **Example: Using Custom Headers**
 
@@ -154,13 +150,6 @@ const client = strapi({
 
 // Headers will be included in all requests
 const articles = await client.collection('articles').find();
-
-// Override headers for a specific request
-const article = await client.fetch('/articles/1', {
-  headers: {
-    'Accept-Language': 'fr-FR', // This will override the client-level header
-  },
-});
 ```
 
 ## 📚 API Reference
