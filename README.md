@@ -38,6 +38,7 @@
    - [Basic Configuration](#basic-configuration)
    - [Authentication](#authentication)
      - [API Token Authentication](#api-token-authentication)
+     - [Custom Headers](#custom-headers)
 3. [API Reference](#-api-reference)
 4. [Resource Managers](#-resource-managers)
    - [`.collection()`](#collectionresource)
@@ -116,6 +117,39 @@ const client = strapi({
   // Auth configuration
   auth: 'your-api-token-here',
 });
+```
+
+#### Custom Headers
+
+You can configure custom headers to be included with every request made by the client:
+
+```typescript
+const client = strapi({
+  baseURL: 'http://localhost:1337/api',
+  auth: 'your-api-token-here',
+  headers: {
+    'X-Custom-Header': 'value',
+    'Accept-Language': 'en-US',
+  },
+});
+```
+
+Custom headers specified in the client configuration are applied to all requests
+
+**Example: Using Custom Headers**
+
+```typescript
+// Initialize client with custom headers
+const client = strapi({
+  baseURL: 'http://localhost:1337/api',
+  headers: {
+    'X-Request-ID': '12345',
+    'Accept-Language': 'en-US',
+  },
+});
+
+// Headers will be included in all requests
+const articles = await client.collection('articles').find();
 ```
 
 ## 📚 API Reference
