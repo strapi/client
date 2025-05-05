@@ -8,6 +8,7 @@ import { HttpClient } from './http';
 import { AuthInterceptors, HttpInterceptors } from './interceptors';
 import { StrapiConfigValidator } from './validators';
 
+import type { ContentTypeManagerOptions } from './content-types/abstract';
 import type { HttpClientConfig } from './http';
 
 const debug = createDebug('strapi:core');
@@ -306,10 +307,11 @@ export class StrapiClient {
    *
    * This instance provides methods for performing operations on the associated documents: create, read, update, delete.
    *
-   * @param resource -  The plural name of the collection to interact with.
-   *                    This should match the collection name as defined in the Strapi app.
+   * @param resource - The plural name of the collection to interact with.
+   *                     This should match the collection name as defined in the Strapi app.
+   * @param [options] - Optional parameter to specify additional configuration such as custom API path.
    *
-   * @returns An instance of {@link CollectionTypeManager} targeting the given {@link resource} name.
+   * @returns An instance of {@link CollectionTypeManager} for the given {@link resource}.
    *
    * @example
    * ```typescript
@@ -317,7 +319,7 @@ export class StrapiClient {
    * const config = { baseURL: 'http://localhost:1337/api' };
    * const client = new Strapi(config);
    *
-   * // Retrieve a CollectionTypeManager for the 'articles' resource
+   * // Retrieve a CollectionTypeManager for the 'articles' collection
    * const articles = client.collection('articles');
    *
    * // Example: find all articles
@@ -334,13 +336,19 @@ export class StrapiClient {
    *
    * // Example: delete an article
    * await articles.delete('dde61ffb-00a6-4cc7-a61f-fb00a63cc740');
+   *
+   * // Example with a custom API path
+   * const customArticles = client.collection('articles', { path: '/custom-articles-path' });
+   * const customAllArticles = await customArticles.find();
    * ```
    *
    * @see CollectionTypeManager
    * @see StrapiClient
    */
-  collection(resource: string) {
-    return new CollectionTypeManager(resource, this._httpClient);
+  collection(resource: string, options: ClientCollectionOptions = {}) {
+    const { path } = options;
+
+    return new CollectionTypeManager({ resource, path }, this._httpClient);
   }
 
   /**
@@ -350,8 +358,9 @@ export class StrapiClient {
    *
    * @param resource - The singular name of the single-type resource to interact with.
    *                   This should match the single-type name as defined in the Strapi app.
+   * @param [options] - Optional parameter to specify additional configuration such as custom API path.
    *
-   * @returns An instance of {@link SingleTypeManager} targeting the given {@link resource} name.
+   * @returns An instance of {@link SingleTypeManager} for the given {@link resource}.
    *
    * @example
    * ```typescript
@@ -369,12 +378,22 @@ export class StrapiClient {
    *
    * // Example: delete the homepage content
    * await homepage.delete();
+   *
+   * // Example with a custom API path
+   * const customHomepage = client.single('homepage', { path: '/custom-homepage-path' });
+   * const customHomepageDocument = await customHomepage.find();
    * ```
    *
    * @see SingleTypeManager
    * @see StrapiClient
    */
-  single(resource: string) {
-    return new SingleTypeManager(resource, this._httpClient);
+  single(resource: string, options: SingleCollectionOptions = {}) {
+    const { path } = options;
+
+    return new SingleTypeManager({ resource, path }, this._httpClient);
   }
 }
+
+// Local Client Types
+export type ClientCollectionOptions = Pick<ContentTypeManagerOptions, 'path'>;
+export type SingleCollectionOptions = Pick<ContentTypeManagerOptions, 'path'>;
