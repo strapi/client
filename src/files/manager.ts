@@ -5,7 +5,13 @@ import { URLHelper } from '../utilities';
 
 import { FILE_API_PREFIX } from './constants';
 import { FileErrorMapper } from './errors';
-import { FileQueryParams, FileListResponse, FileResponse, FileUpdateData } from './types';
+import {
+  FileQueryParams,
+  FileListResponse,
+  FileResponse,
+  FileUpdateData,
+  MediaUploadResponse,
+} from './types';
 
 const debug = createDebug('strapi:files');
 
@@ -226,6 +232,58 @@ export class FilesManager {
       return json;
     } catch (error) {
       debug('error deleting file with ID %o: %o', fileId, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Uploads a new media file to the Strapi Media Library.
+   *
+   * @param file - The file to upload (Blob).
+   * @param filename - Optional filename to use for the uploaded file.
+   * @returns A promise that resolves to the uploaded file information.
+   *
+   * @throws {FileForbiddenError} if the user does not have permission to upload files.
+   * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
+   *
+   * @example
+   * ```typescript
+   * const filesManager = new FilesManager(httpClient);
+   *
+   * // Upload with a File object (browser)
+   * const fileInput = document.querySelector('input[type="file"]');
+   * const file = fileInput.files[0];
+   * const result = await filesManager.upload(file);
+   *
+   * // Upload with a Buffer and custom filename (Node.js)
+   * import { blobFrom } from 'node-fetch';
+   * const file = await blobFrom('./1.png', 'image/png');
+   * const result = await filesManager.upload(file);
+   *
+   * console.log(result); // Upload response with file details
+   * ```
+   */
+  async upload(file: Blob, filename?: string): Promise<MediaUploadResponse> {
+    debug('uploading new file with filename %o', filename);
+
+    try {
+      const url = FILE_API_PREFIX;
+      const client = this.createFileHttpClient();
+
+      const formData = new FormData();
+
+      // The FormData will automatically set the Content-Type header with proper boundary
+      // Our HTTP interceptor will skip setting Content-Type for FormData
+      formData.append('files', file);
+
+      const response = await client.post(url, formData);
+      const json = await response.json();
+
+      debug('successfully uploaded file');
+
+      return json;
+    } catch (error) {
+      debug('error uploading file: %o', error);
       throw error;
     }
   }

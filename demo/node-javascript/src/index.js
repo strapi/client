@@ -1,6 +1,7 @@
 const { strapi } = require('@strapi/client');
 require('dotenv').config();
 const os = require('os');
+const { blobFrom } = require('node-fetch');
 
 const api_token = process.env.FULL_ACCESS_TOKEN; // READ_ONLY_TOKEN is also available
 
@@ -101,6 +102,12 @@ async function main() {
   // Example: Update file metadata
   console.log(os.EOL);
   console.log('=== File Update Operations ===');
+  console.log(os.EOL);
+
+  console.log('=== File Upload Example ===');
+  const file = await blobFrom('./src/images/image.png', 'image/png');
+  const uploadResult = await client.files.upload(file);
+  console.log('Upload successful:', uploadResult);
   console.log(os.EOL);
 
   if (techCategoryResult.data && techCategoryResult.data.length > 0) {

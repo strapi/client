@@ -5,6 +5,7 @@ import {
   FileError,
   FileForbiddenError,
   FileErrorMapper,
+  MediaUploadResponse,
 } from '../../../src/files';
 import { FileUpdateData } from '../../../src/files/types';
 import { HttpClient } from '../../../src/http';
@@ -727,6 +728,97 @@ describe('FilesManager', () => {
 
       // Assert
       expect(createSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  describe('upload', () => {
+    const mockUploadResponse: MediaUploadResponse = [
+      {
+        id: 123,
+        documentId: 'doc-123',
+        name: 'uploaded-file.jpg',
+        alternativeText: 'Test uploaded image',
+        caption: 'Test caption',
+        width: 800,
+        height: 600,
+        hash: 'abc123',
+        ext: '.jpg',
+        mime: 'image/jpeg',
+        url: 'https://example.com/uploads/uploaded-file.jpg',
+        size: 54321,
+        provider: 'local',
+        previewUrl: null,
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
+        formats: {},
+        folderPath: '/uploads',
+      },
+    ];
+
+    it('should successfully upload a file without metadata', async () => {
+      // Arrange
+      const file = new Blob(['test content'], { type: 'image/jpeg' });
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+      });
+
+      // Act
+      const result = await filesManager.upload(file);
+
+      // Assert
+      expect(result).toEqual(mockUploadResponse);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload');
+      expect(requestArg.method).toBe('POST');
+    });
+
+    it('should successfully upload a file with custom filename', async () => {
+      // Arrange
+      const file = new Blob(['test content'], { type: 'image/jpeg' });
+      const customFilename = 'custom-name.jpg';
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+      });
+
+      // Act
+      const result = await filesManager.upload(file, customFilename);
+
+      // Assert
+      expect(result).toEqual(mockUploadResponse);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload');
+      expect(requestArg.method).toBe('POST');
+    });
+
+    it('should throw FileForbiddenError when user does not have permission to upload', async () => {
+      // Arrange
+      const file = new Blob(['test content'], { type: 'image/jpeg' });
+      const mockRequest = new Request('http://example.com/api/upload');
+      const mockResponse = new Response('Forbidden', { status: 403, statusText: 'Forbidden' });
+
+      const httpForbiddenError = new HTTPForbiddenError(mockResponse, mockRequest);
+      mockFetch.mockRejectedValueOnce(httpForbiddenError);
+
+      // Act & Assert
+      try {
+        await filesManager.upload(file);
+        fail('Expected an error to be thrown');
+      } catch (error) {
+        expect(error).toBeInstanceOf(FileForbiddenError);
+        if (error instanceof FileForbiddenError) {
+          expect(error.message).toContain('Access to file');
+          expect(error.request).toBe(mockRequest);
+          expect(error.response).toBe(mockResponse);
+        }
+      }
     });
   });
 });

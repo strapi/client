@@ -60,3 +60,8 @@ export interface FileResponse {
  * without the data/meta structure used in the core content API responses.
  */
 export type FileListResponse = Array<FileResponse>;
+
+/**
+ * Response structure for file uploads.
+ */
+export type MediaUploadResponse = Array<FileResponse>;
