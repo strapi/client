@@ -255,7 +255,7 @@ export class FilesManager {
    * const file = fileInput.files[0];
    * const result = await filesManager.upload(file);
    *
-   * // Upload with a Buffer and custom filename (Node.js)
+   * // Upload with a Blob and custom filename (Node.js)
    * import { blobFrom } from 'node-fetch';
    * const file = await blobFrom('./1.png', 'image/png');
    * const result = await filesManager.upload(file);
