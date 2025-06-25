@@ -105,7 +105,7 @@ async function main() {
   console.log(os.EOL);
 
   console.log('=== File Upload Example ===');
-  const file = await blobFrom('./src/images/image.png', 'image/png');
+  const file = await blobFrom('./src/images/coffee-art.png', 'image/png');
   const uploadResult = await client.files.upload(file);
   console.log('Upload successful:', uploadResult);
   console.log(os.EOL);
