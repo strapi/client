@@ -755,7 +755,7 @@ describe('FilesManager', () => {
       },
     ];
 
-    it('should successfully upload a file with metadata', async () => {
+    it('should successfully upload a file as a blob with metadata', async () => {
       // Arrange
       const file = new Blob(['test content'], { type: 'image/jpeg' });
       const customFileInfo: FileUpdateData = {
@@ -771,6 +771,65 @@ describe('FilesManager', () => {
 
       // Act
       const result = await filesManager.upload(file, customFileInfo);
+
+      // Assert
+      expect(result).toEqual(mockUploadResponse);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload');
+      expect(requestArg.method).toBe('POST');
+    });
+
+    it('should successfully upload a file as a buffer with metadata', async () => {
+      // Arrange
+      const file = Buffer.from('test content');
+      const customFileInfo: FileUpdateData = {
+        name: 'custom-name.jpg',
+        alternativeText: 'custom-alt-text',
+        caption: 'custom-caption',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+      });
+
+      // Act
+      const result = await filesManager.upload(file, {
+        filename: 'custom-name.jpg',
+        mimetype: 'image/jpeg',
+        fileInfo: customFileInfo,
+      });
+
+      // Assert
+      expect(result).toEqual(mockUploadResponse);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload');
+      expect(requestArg.method).toBe('POST');
+    });
+
+    it('should successfully upload a file as a buffer - with only fileInfo metadata provided', async () => {
+      // Arrange
+      const file = Buffer.from('test content');
+      const customFileInfo: FileUpdateData = {
+        name: 'custom-name.jpg',
+        alternativeText: 'custom-alt-text',
+        caption: 'custom-caption',
+      };
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+      });
+
+      // Act
+      const result = await filesManager.upload(file, {
+        // Defaults will be used for filename and mimetype
+        fileInfo: customFileInfo,
+      });
 
       // Assert
       expect(result).toEqual(mockUploadResponse);

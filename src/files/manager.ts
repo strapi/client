@@ -10,6 +10,7 @@ import {
   FileListResponse,
   FileResponse,
   FileUpdateData,
+  FileUploadOptions,
   MediaUploadResponse,
 } from './types';
 
@@ -239,8 +240,9 @@ export class FilesManager {
   /**
    * Uploads a new media file to the Strapi Media Library.
    *
-   * @param file - The file to upload (Blob).
-   * @param filename - Optional filename to use for the uploaded file.
+   * @param file - The file to upload (Blob or Buffer).
+   * @param options - Upload options including filename, mimetype, and fileInfo.
+   *                  Required when uploading Buffer data to ensure proper file type detection.
    * @returns A promise that resolves to the uploaded file information.
    *
    * @throws {FileForbiddenError} if the user does not have permission to upload files.
@@ -255,15 +257,29 @@ export class FilesManager {
    * const file = fileInput.files[0];
    * const result = await filesManager.upload(file);
    *
-   * // Upload with a Blob and custom filename (Node.js)
+   * // Upload with a Blob
    * import { blobFrom } from 'node-fetch';
    * const file = await blobFrom('./1.png', 'image/png');
    * const result = await filesManager.upload(file);
    *
+   * // Upload with a Buffer (Node.js) - requires filename and mimetype
+   * import fs from 'fs';
+   * const buffer = fs.readFileSync('./image.png');
+   * const result = await filesManager.upload(buffer, {
+   *   filename: 'image.png',
+   *   mimetype: 'image/png',
+   *   fileInfo: { alternativeText: 'An example image' }
+   * });
+   *
    * console.log(result); // Upload response with file details
    * ```
    */
-  async upload(file: Blob, fileInfo?: FileUpdateData): Promise<MediaUploadResponse> {
+  async upload(file: Blob, fileInfo?: FileUpdateData): Promise<MediaUploadResponse>;
+  async upload(file: Buffer, options?: FileUploadOptions): Promise<MediaUploadResponse>;
+  async upload(
+    file: Blob | Buffer,
+    optionsOrFileInfo?: FileUploadOptions | FileUpdateData
+  ): Promise<MediaUploadResponse> {
     debug('uploading new file');
 
     try {
@@ -272,9 +288,28 @@ export class FilesManager {
 
       const formData = new FormData();
 
-      // The FormData will automatically set the Content-Type header with proper boundary
-      // Our HTTP interceptor will skip setting Content-Type for FormData
-      formData.append('files', file);
+      const isFileUploadOptions =
+        optionsOrFileInfo &&
+        ('filename' in optionsOrFileInfo ||
+          'mimetype' in optionsOrFileInfo ||
+          'fileInfo' in optionsOrFileInfo);
+
+      const options = isFileUploadOptions ? (optionsOrFileInfo as FileUploadOptions) : undefined;
+      const legacyFileInfo = !isFileUploadOptions
+        ? (optionsOrFileInfo as FileUpdateData)
+        : undefined;
+
+      if (Buffer.isBuffer(file)) {
+        const filename = options?.filename || 'file';
+        const mimetype = options?.mimetype || 'application/octet-stream';
+
+        const blob = new Blob([file], { type: mimetype });
+        formData.append('files', blob, filename);
+      } else {
+        formData.append('files', file);
+      }
+
+      const fileInfo = options?.fileInfo || legacyFileInfo;
       if (fileInfo) {
         formData.append('fileInfo', JSON.stringify(fileInfo));
       }

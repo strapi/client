@@ -28,6 +28,16 @@ export interface FileUpdateData {
 }
 
 /**
+ * Options for file upload operations.
+ * Required when uploading Buffer data to ensure proper file type detection.
+ */
+export interface FileUploadOptions {
+  filename?: string;
+  mimetype?: string;
+  fileInfo?: FileUpdateData;
+}
+
+/**
  * Response structure for a single file from the Strapi upload plugin.
  * This interface represents the actual response structure from the API.
  */

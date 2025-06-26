@@ -105,7 +105,7 @@ async function main() {
   console.log('=== File Update Operations ===');
   console.log(os.EOL);
 
-  console.log('=== File Upload Example ===');
+  console.log('=== File Upload Example (Blob) ===');
   const filePath = './src/images/coffee-art.jpg';
   const mimeType = 'image/jpeg';
 
@@ -113,11 +113,23 @@ async function main() {
   const fileBlob = new Blob([fileContentBuffer], { type: mimeType });
 
   const uploadResult = await client.files.upload(fileBlob, {
-    name: 'My file name',
-    alternativeText: 'My alternative text',
-    caption: 'My caption',
+    name: 'Coffee Art uploaded as Blob',
+    alternativeText: 'Uploaded directly from blob',
+    caption: 'Coffee Art uploaded using Blob',
   });
-  console.log('Upload successful:', uploadResult);
+  console.log('Blob upload successful:', uploadResult);
+  console.log(os.EOL);
+
+  console.log('=== File Upload Example (Buffer) ===');
+  // Upload the same file as a Buffer directly
+  const bufferUploadResult = await client.files.upload(fileContentBuffer, {
+    fileInfo: {
+      name: 'Coffee Art uploaded as Buffer',
+      alternativeText: 'Uploaded directly from buffer',
+      caption: 'Coffee Art uploaded using Buffer',
+    },
+  });
+  console.log('Buffer upload successful:', bufferUploadResult);
   console.log(os.EOL);
 
   if (techCategoryResult.data && techCategoryResult.data.length > 0) {
