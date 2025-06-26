@@ -263,8 +263,8 @@ export class FilesManager {
    * console.log(result); // Upload response with file details
    * ```
    */
-  async upload(file: Blob, filename?: string): Promise<MediaUploadResponse> {
-    debug('uploading new file with filename %o', filename);
+  async upload(file: Blob, fileInfo?: FileUpdateData): Promise<MediaUploadResponse> {
+    debug('uploading new file');
 
     try {
       const url = FILE_API_PREFIX;
@@ -275,6 +275,9 @@ export class FilesManager {
       // The FormData will automatically set the Content-Type header with proper boundary
       // Our HTTP interceptor will skip setting Content-Type for FormData
       formData.append('files', file);
+      if (fileInfo) {
+        formData.append('fileInfo', JSON.stringify(fileInfo));
+      }
 
       const response = await client.post(url, formData);
       const json = await response.json();

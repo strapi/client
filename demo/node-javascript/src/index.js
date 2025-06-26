@@ -1,7 +1,8 @@
 const { strapi } = require('@strapi/client');
 require('dotenv').config();
 const os = require('os');
-const { blobFrom } = require('node-fetch');
+const { Blob } = require('node:buffer');
+const { readFile } = require('node:fs/promises');
 
 const api_token = process.env.FULL_ACCESS_TOKEN; // READ_ONLY_TOKEN is also available
 
@@ -105,8 +106,17 @@ async function main() {
   console.log(os.EOL);
 
   console.log('=== File Upload Example ===');
-  const file = await blobFrom('./src/images/coffee-art.png', 'image/png');
-  const uploadResult = await client.files.upload(file);
+  const filePath = './src/images/coffee-art.jpg';
+  const mimeType = 'image/jpeg';
+
+  const fileContentBuffer = await readFile(filePath);
+  const fileBlob = new Blob([fileContentBuffer], { type: mimeType });
+
+  const uploadResult = await client.files.upload(fileBlob, {
+    name: 'My file name',
+    alternativeText: 'My alternative text',
+    caption: 'My caption',
+  });
   console.log('Upload successful:', uploadResult);
   console.log(os.EOL);
 

@@ -755,9 +755,14 @@ describe('FilesManager', () => {
       },
     ];
 
-    it('should successfully upload a file without metadata', async () => {
+    it('should successfully upload a file with metadata', async () => {
       // Arrange
       const file = new Blob(['test content'], { type: 'image/jpeg' });
+      const customFileInfo: FileUpdateData = {
+        name: 'custom-name.jpg',
+        alternativeText: 'custom-alt-text',
+        caption: 'custom-caption',
+      };
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
@@ -765,29 +770,7 @@ describe('FilesManager', () => {
       });
 
       // Act
-      const result = await filesManager.upload(file);
-
-      // Assert
-      expect(result).toEqual(mockUploadResponse);
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-
-      const requestArg = mockFetch.mock.calls[0][0];
-      expect(requestArg.url).toBe('http://example.com/api/upload');
-      expect(requestArg.method).toBe('POST');
-    });
-
-    it('should successfully upload a file with custom filename', async () => {
-      // Arrange
-      const file = new Blob(['test content'], { type: 'image/jpeg' });
-      const customFilename = 'custom-name.jpg';
-
-      mockFetch.mockResolvedValueOnce({
-        ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
-      });
-
-      // Act
-      const result = await filesManager.upload(file, customFilename);
+      const result = await filesManager.upload(file, customFileInfo);
 
       // Assert
       expect(result).toEqual(mockUploadResponse);
