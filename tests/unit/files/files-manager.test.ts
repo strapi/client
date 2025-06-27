@@ -758,19 +758,19 @@ describe('FilesManager', () => {
     it('should successfully upload a file as a blob with metadata', async () => {
       // Arrange
       const file = new Blob(['test content'], { type: 'image/jpeg' });
-      const customFileInfo: FileUpdateData = {
-        name: 'custom-name.jpg',
-        alternativeText: 'custom-alt-text',
-        caption: 'custom-caption',
-      };
-
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
       });
 
       // Act
-      const result = await filesManager.upload(file, customFileInfo);
+      const result = await filesManager.upload(file, {
+        fileInfo: {
+          name: 'custom-name.jpg',
+          alternativeText: 'custom-alt-text',
+          caption: 'custom-caption',
+        },
+      });
 
       // Assert
       expect(result).toEqual(mockUploadResponse);
@@ -811,6 +811,28 @@ describe('FilesManager', () => {
       expect(requestArg.method).toBe('POST');
     });
 
+    it('should throw an error when uploading a file as a buffer without filename and mimetype', async () => {
+      // Arrange
+      const file = Buffer.from('test content');
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+      });
+
+      // Act & Assert
+      await expect(
+        // @ts-expect-error - we want to test the error case
+        filesManager.upload(file, {
+          fileInfo: {
+            name: 'custom-name.jpg',
+            alternativeText: 'custom-alt-text',
+            caption: 'custom-caption',
+          },
+        })
+      ).rejects.toThrow('Filename and mimetype are required when uploading Buffer data');
+    });
+
     it('should successfully upload a file as a buffer - with only fileInfo metadata provided', async () => {
       // Arrange
       const file = Buffer.from('test content');
@@ -827,8 +849,9 @@ describe('FilesManager', () => {
 
       // Act
       const result = await filesManager.upload(file, {
-        // Defaults will be used for filename and mimetype
         fileInfo: customFileInfo,
+        filename: 'custom-name.jpg',
+        mimetype: 'image/jpeg',
       });
 
       // Assert

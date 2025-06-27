@@ -10,7 +10,8 @@ import {
   FileListResponse,
   FileResponse,
   FileUpdateData,
-  FileUploadOptions,
+  BlobUploadOptions,
+  BufferUploadOptions,
   MediaUploadResponse,
 } from './types';
 
@@ -241,8 +242,7 @@ export class FilesManager {
    * Uploads a new media file to the Strapi Media Library.
    *
    * @param file - The file to upload (Blob or Buffer).
-   * @param options - Upload options including filename, mimetype, and fileInfo.
-   *                  Required when uploading Buffer data to ensure proper file type detection.
+   * @param options - Upload options. For Buffer uploads, filename and mimetype are required.
    * @returns A promise that resolves to the uploaded file information.
    *
    * @throws {FileForbiddenError} if the user does not have permission to upload files.
@@ -255,14 +255,18 @@ export class FilesManager {
    * // Upload with a File object (browser)
    * const fileInput = document.querySelector('input[type="file"]');
    * const file = fileInput.files[0];
-   * const result = await filesManager.upload(file);
+   * const result = await filesManager.upload(file, {
+   *   fileInfo: { alternativeText: 'A user uploaded image' }
+   * });
    *
    * // Upload with a Blob
    * import { blobFrom } from 'node-fetch';
    * const file = await blobFrom('./1.png', 'image/png');
-   * const result = await filesManager.upload(file);
+   * const result = await filesManager.upload(file, {
+   *   fileInfo: { alternativeText: 'An example image' }
+   * });
    *
-   * // Upload with a Buffer (Node.js) - requires filename and mimetype
+   * // Upload with a Buffer (Node.js) - filename and mimetype are required
    * import fs from 'fs';
    * const buffer = fs.readFileSync('./image.png');
    * const result = await filesManager.upload(buffer, {
@@ -274,11 +278,11 @@ export class FilesManager {
    * console.log(result); // Upload response with file details
    * ```
    */
-  async upload(file: Blob, fileInfo?: FileUpdateData): Promise<MediaUploadResponse>;
-  async upload(file: Buffer, options?: FileUploadOptions): Promise<MediaUploadResponse>;
+  async upload(file: Blob, options?: BlobUploadOptions): Promise<MediaUploadResponse>;
+  async upload(file: Buffer, options: BufferUploadOptions): Promise<MediaUploadResponse>;
   async upload(
     file: Blob | Buffer,
-    optionsOrFileInfo?: FileUploadOptions | FileUpdateData
+    options?: BlobUploadOptions | BufferUploadOptions
   ): Promise<MediaUploadResponse> {
     debug('uploading new file');
 
@@ -286,43 +290,61 @@ export class FilesManager {
       const url = FILE_API_PREFIX;
       const client = this.createFileHttpClient();
 
-      const formData = new FormData();
-
-      const isFileUploadOptions =
-        optionsOrFileInfo &&
-        ('filename' in optionsOrFileInfo ||
-          'mimetype' in optionsOrFileInfo ||
-          'fileInfo' in optionsOrFileInfo);
-
-      const options = isFileUploadOptions ? (optionsOrFileInfo as FileUploadOptions) : undefined;
-      const legacyFileInfo = !isFileUploadOptions
-        ? (optionsOrFileInfo as FileUpdateData)
-        : undefined;
-
       if (typeof Buffer !== 'undefined' && Buffer.isBuffer(file)) {
-        const filename = options?.filename || 'file';
-        const mimetype = options?.mimetype || 'application/octet-stream';
+        if (!options || !('filename' in options) || !('mimetype' in options)) {
+          throw new Error('Filename and mimetype are required when uploading Buffer data');
+        }
 
-        const blob = new Blob([file], { type: mimetype });
-        formData.append('files', blob, filename);
+        return this.uploadBuffer(file, options as BufferUploadOptions, client, url);
       } else {
-        formData.append('files', file as Blob);
+        return this.uploadBlob(file as Blob, options as BlobUploadOptions, client, url);
       }
-
-      const fileInfo = options?.fileInfo || legacyFileInfo;
-      if (fileInfo) {
-        formData.append('fileInfo', JSON.stringify(fileInfo));
-      }
-
-      const response = await client.post(url, formData);
-      const json = await response.json();
-
-      debug('successfully uploaded file');
-
-      return json;
     } catch (error) {
       debug('error uploading file: %o', error);
       throw error;
     }
+  }
+
+  private async uploadBuffer(
+    buffer: Buffer,
+    options: BufferUploadOptions,
+    client: HttpClient,
+    url: string
+  ): Promise<MediaUploadResponse> {
+    const formData = new FormData();
+
+    const blob = new Blob([buffer], { type: options.mimetype });
+    formData.append('files', blob, options.filename);
+
+    if (options.fileInfo) {
+      formData.append('fileInfo', JSON.stringify(options.fileInfo));
+    }
+
+    const response = await client.post(url, formData);
+    const json = await response.json();
+
+    debug('successfully uploaded buffer file');
+    return json;
+  }
+
+  private async uploadBlob(
+    blob: Blob,
+    options: BlobUploadOptions | undefined,
+    client: HttpClient,
+    url: string
+  ): Promise<MediaUploadResponse> {
+    const formData = new FormData();
+
+    formData.append('files', blob);
+
+    if (options?.fileInfo) {
+      formData.append('fileInfo', JSON.stringify(options.fileInfo));
+    }
+
+    const response = await client.post(url, formData);
+    const json = await response.json();
+
+    debug('successfully uploaded blob file');
+    return json;
   }
 }

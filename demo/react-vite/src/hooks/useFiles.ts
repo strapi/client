@@ -31,9 +31,11 @@ export const useFiles = () => {
         console.log('Uploading file:', file);
         const uploadPromise = strapi.files
           .upload(file, {
-            name: file.name,
-            alternativeText: `Uploaded file: ${file.name}`,
-            caption: `File uploaded via React demo - ${new Date().toLocaleString()}`,
+            fileInfo: {
+              name: file.name,
+              alternativeText: `Uploaded file: ${file.name}`,
+              caption: `File uploaded via React demo - ${new Date().toLocaleString()}`,
+            },
           })
           .then(() => {
             successfulUploads.push(file.name);

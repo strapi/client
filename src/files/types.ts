@@ -27,13 +27,16 @@ export interface FileUpdateData {
   caption?: string;
 }
 
+export interface BlobUploadOptions {
+  fileInfo?: FileUpdateData;
+}
+
 /**
- * Options for file upload operations.
- * Required when uploading Buffer data to ensure proper file type detection.
+ * NOTE: filename and mimetype are required when uploading buffers.
  */
-export interface FileUploadOptions {
-  filename?: string;
-  mimetype?: string;
+export interface BufferUploadOptions {
+  filename: string;
+  mimetype: string;
   fileInfo?: FileUpdateData;
 }
 
