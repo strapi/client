@@ -299,14 +299,14 @@ export class FilesManager {
         ? (optionsOrFileInfo as FileUpdateData)
         : undefined;
 
-      if (Buffer.isBuffer(file)) {
+      if (typeof Buffer !== 'undefined' && Buffer.isBuffer(file)) {
         const filename = options?.filename || 'file';
         const mimetype = options?.mimetype || 'application/octet-stream';
 
         const blob = new Blob([file], { type: mimetype });
         formData.append('files', blob, filename);
       } else {
-        formData.append('files', file);
+        formData.append('files', file as Blob);
       }
 
       const fileInfo = options?.fileInfo || legacyFileInfo;
