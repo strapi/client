@@ -885,5 +885,42 @@ describe('FilesManager', () => {
         }
       }
     });
+
+    it('should fallback to uploadBlob when file type cannot be determined', async () => {
+      // Arrange
+      const mockFileObject = {
+        name: 'test-file.txt',
+        size: 100,
+        data: 'some data',
+      };
+
+      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+      });
+
+      // Act
+      const result = await filesManager.upload(mockFileObject as any, {
+        fileInfo: {
+          name: 'fallback-test.txt',
+          alternativeText: 'fallback test',
+        },
+      });
+
+      // Assert
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        'Could not determine type of file; attempting upload as Blob'
+      );
+      expect(result).toEqual(mockUploadResponse);
+      expect(mockFetch).toHaveBeenCalledTimes(1);
+
+      const requestArg = mockFetch.mock.calls[0][0];
+      expect(requestArg.url).toBe('http://example.com/api/upload');
+      expect(requestArg.method).toBe('POST');
+
+      consoleWarnSpy.mockRestore();
+    });
   });
 });

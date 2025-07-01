@@ -295,9 +295,12 @@ export class FilesManager {
           throw new Error('Filename and mimetype are required when uploading Buffer data');
         }
 
-        return this.uploadBuffer(file, options as BufferUploadOptions, client, url);
+        return this.uploadBuffer(file, options, client, url);
+      } else if (file instanceof Blob) {
+        return this.uploadBlob(file, options, client, url);
       } else {
-        return this.uploadBlob(file as Blob, options as BlobUploadOptions, client, url);
+        console.warn('Could not determine type of file; attempting upload as Blob');
+        return this.uploadBlob(file as unknown as Blob, options as BlobUploadOptions, client, url);
       }
     } catch (error) {
       debug('error uploading file: %o', error);
