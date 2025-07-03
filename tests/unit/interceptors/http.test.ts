@@ -45,6 +45,25 @@ describe('HTTP Interceptors', () => {
       // Assert
       expect(request.headers.get('Content-Type')).toBe('text/plain');
     });
+
+    it('should not set Content-Type header for FormData requests', async () => {
+      // Arrange
+      const formData = new FormData();
+      formData.append('test', 'value');
+
+      const request = new Request('https://example.com', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const interceptor = HttpInterceptors.setDefaultHeaders();
+
+      // Act
+      await interceptor({ request });
+
+      // Assert
+      expect(request.headers.get('Content-Type')).toContain('multipart/form-data');
+    });
   });
 
   describe('transformErrors', () => {

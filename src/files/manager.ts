@@ -5,7 +5,15 @@ import { URLHelper } from '../utilities';
 
 import { FILE_API_PREFIX } from './constants';
 import { FileErrorMapper } from './errors';
-import { FileQueryParams, FileListResponse, FileResponse, FileUpdateData } from './types';
+import {
+  FileQueryParams,
+  FileListResponse,
+  FileResponse,
+  FileUpdateData,
+  BlobUploadOptions,
+  BufferUploadOptions,
+  MediaUploadResponse,
+} from './types';
 
 const debug = createDebug('strapi:files');
 
@@ -228,5 +236,118 @@ export class FilesManager {
       debug('error deleting file with ID %o: %o', fileId, error);
       throw error;
     }
+  }
+
+  /**
+   * Uploads a new media file to the Strapi Media Library.
+   *
+   * @param file - The file to upload (Blob or Buffer).
+   * @param options - Upload options. For Buffer uploads, filename and mimetype are required.
+   * @returns A promise that resolves to the uploaded file information.
+   *
+   * @throws {FileForbiddenError} if the user does not have permission to upload files.
+   * @throws {HTTPError} if the HTTP client encounters connection issues, the server is unreachable, or authentication fails.
+   *
+   * @example
+   * ```typescript
+   * const filesManager = new FilesManager(httpClient);
+   *
+   * // Upload with a File object (browser)
+   * const fileInput = document.querySelector('input[type="file"]');
+   * const file = fileInput.files[0];
+   * const result = await filesManager.upload(file, {
+   *   fileInfo: { alternativeText: 'A user uploaded image' }
+   * });
+   *
+   * // Upload with a Blob
+   * import { blobFrom } from 'node-fetch';
+   * const file = await blobFrom('./1.png', 'image/png');
+   * const result = await filesManager.upload(file, {
+   *   fileInfo: { alternativeText: 'An example image' }
+   * });
+   *
+   * // Upload with a Buffer (Node.js) - filename and mimetype are required
+   * import fs from 'fs';
+   * const buffer = fs.readFileSync('./image.png');
+   * const result = await filesManager.upload(buffer, {
+   *   filename: 'image.png',
+   *   mimetype: 'image/png',
+   *   fileInfo: { alternativeText: 'An example image' }
+   * });
+   *
+   * console.log(result); // Upload response with file details
+   * ```
+   */
+  async upload(file: Blob, options?: BlobUploadOptions): Promise<MediaUploadResponse>;
+  async upload(file: Buffer, options: BufferUploadOptions): Promise<MediaUploadResponse>;
+  async upload(
+    file: Blob | Buffer,
+    options?: BlobUploadOptions | BufferUploadOptions
+  ): Promise<MediaUploadResponse> {
+    debug('uploading new file');
+
+    try {
+      const url = FILE_API_PREFIX;
+      const client = this.createFileHttpClient();
+
+      if (typeof Buffer !== 'undefined' && Buffer.isBuffer(file)) {
+        if (!options || !('filename' in options) || !('mimetype' in options)) {
+          throw new Error('Filename and mimetype are required when uploading Buffer data');
+        }
+
+        return this.uploadBuffer(file, options, client, url);
+      } else if (file instanceof Blob) {
+        return this.uploadBlob(file, options, client, url);
+      } else {
+        console.warn('Could not determine type of file; attempting upload as Blob');
+        return this.uploadBlob(file as unknown as Blob, options as BlobUploadOptions, client, url);
+      }
+    } catch (error) {
+      debug('error uploading file: %o', error);
+      throw error;
+    }
+  }
+
+  private async uploadBuffer(
+    buffer: Buffer,
+    options: BufferUploadOptions,
+    client: HttpClient,
+    url: string
+  ): Promise<MediaUploadResponse> {
+    const formData = new FormData();
+
+    const blob = new Blob([buffer], { type: options.mimetype });
+    formData.append('files', blob, options.filename);
+
+    if (options.fileInfo) {
+      formData.append('fileInfo', JSON.stringify(options.fileInfo));
+    }
+
+    const response = await client.post(url, formData);
+    const json = await response.json();
+
+    debug('successfully uploaded buffer file');
+    return json;
+  }
+
+  private async uploadBlob(
+    blob: Blob,
+    options: BlobUploadOptions | undefined,
+    client: HttpClient,
+    url: string
+  ): Promise<MediaUploadResponse> {
+    const formData = new FormData();
+
+    formData.append('files', blob);
+
+    if (options?.fileInfo) {
+      formData.append('fileInfo', JSON.stringify(options.fileInfo));
+    }
+
+    const response = await client.post(url, formData);
+    const json = await response.json();
+
+    debug('successfully uploaded blob file');
+    return json;
   }
 }

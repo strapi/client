@@ -18,6 +18,9 @@ export class HttpInterceptors {
    *
    * This interceptor is typically used to attach headers such as `Content-Type`, or other app-specific metadata.
    *
+   * Note: For FormData uploads, the Content-Type header is intentionally not set to allow the browser
+   * to automatically set the proper multipart/form-data boundary.
+   *
    * @returns A request interceptor that modifies the request to include the default headers.
    *
    * @example
@@ -33,6 +36,10 @@ export class HttpInterceptors {
         const hasHeader = request.headers.has(key);
 
         if (!hasHeader) {
+          if (key === 'Content-Type' && request.body instanceof FormData) {
+            continue;
+          }
+
           request.headers.set(key, value);
         }
       }

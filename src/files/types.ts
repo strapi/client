@@ -27,6 +27,19 @@ export interface FileUpdateData {
   caption?: string;
 }
 
+export interface BlobUploadOptions {
+  fileInfo?: FileUpdateData;
+}
+
+/**
+ * NOTE: filename and mimetype are required when uploading buffers.
+ */
+export interface BufferUploadOptions {
+  filename: string;
+  mimetype: string;
+  fileInfo?: FileUpdateData;
+}
+
 /**
  * Response structure for a single file from the Strapi upload plugin.
  * This interface represents the actual response structure from the API.
@@ -60,3 +73,8 @@ export interface FileResponse {
  * without the data/meta structure used in the core content API responses.
  */
 export type FileListResponse = Array<FileResponse>;
+
+/**
+ * Response structure for file uploads.
+ */
+export type MediaUploadResponse = Array<FileResponse>;

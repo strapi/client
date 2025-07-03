@@ -1,6 +1,8 @@
 const { strapi } = require('@strapi/client');
 require('dotenv').config();
 const os = require('os');
+const { Blob } = require('node:buffer');
+const { readFile } = require('node:fs/promises');
 
 const api_token = process.env.FULL_ACCESS_TOKEN; // READ_ONLY_TOKEN is also available
 
@@ -101,6 +103,33 @@ async function main() {
   // Example: Update file metadata
   console.log(os.EOL);
   console.log('=== File Update Operations ===');
+  console.log(os.EOL);
+
+  console.log('=== File Upload Example (Blob) ===');
+  const filePath = './src/images/coffee-art.jpg';
+  const mimeType = 'image/jpeg';
+
+  const fileContentBuffer = await readFile(filePath);
+  const fileBlob = new Blob([fileContentBuffer], { type: mimeType });
+
+  const uploadResult = await client.files.upload(fileBlob, {
+    name: 'Coffee Art uploaded as Blob',
+    alternativeText: 'Uploaded directly from blob',
+    caption: 'Coffee Art uploaded using Blob',
+  });
+  console.log('Blob upload successful:', uploadResult);
+  console.log(os.EOL);
+
+  console.log('=== File Upload Example (Buffer) ===');
+  // Upload the same file as a Buffer directly
+  const bufferUploadResult = await client.files.upload(fileContentBuffer, {
+    fileInfo: {
+      name: 'Coffee Art uploaded as Buffer',
+      alternativeText: 'Uploaded directly from buffer',
+      caption: 'Coffee Art uploaded using Buffer',
+    },
+  });
+  console.log('Buffer upload successful:', bufferUploadResult);
   console.log(os.EOL);
 
   if (techCategoryResult.data && techCategoryResult.data.length > 0) {
