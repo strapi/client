@@ -213,4 +213,141 @@ describe('CollectionTypeManager CRUD Methods', () => {
       });
     });
   });
+
+  describe('Users-Permissions Plugin Support', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(MockHttpClient.prototype, 'request')
+        .mockImplementation(() =>
+          Promise.resolve(
+            new Response(JSON.stringify({ id: 1, username: 'testuser' }), { status: 200 })
+          )
+        );
+    });
+
+    it('should NOT wrap data when plugin is set to "users-permissions"', async () => {
+      // Arrange
+      const usersManager = new CollectionTypeManager(
+        { resource: 'users', plugin: { name: 'users-permissions', prefix: '' } },
+        mockHttpClient
+      );
+      const payload = {
+        username: 'testuser',
+        email: 'test@test.com',
+        password: 'Test1234!',
+        role: 1,
+      };
+
+      // Act
+      await usersManager.create(payload);
+
+      // Assert - Should send raw payload without data wrapping
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/users', {
+        method: 'POST',
+        body: JSON.stringify(payload), // No { data: payload } wrapping
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    });
+
+    it('should NOT wrap data for update operations when plugin is set to "users-permissions"', async () => {
+      // Arrange
+      const usersManager = new CollectionTypeManager(
+        { resource: 'users', plugin: { name: 'users-permissions', prefix: '' } },
+        mockHttpClient
+      );
+      const payload = { username: 'updateduser', email: 'updated@test.com' };
+
+      // Act
+      await usersManager.update('1', payload);
+
+      // Assert - Should send raw payload without data wrapping
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/users/1', {
+        method: 'PUT',
+        body: JSON.stringify(payload), // No { data: payload } wrapping
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    });
+  });
+
+  describe('Plugin Route Prefixing', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(MockHttpClient.prototype, 'request')
+        .mockImplementation(() =>
+          Promise.resolve(new Response(JSON.stringify({ id: 1, title: 'Test' }), { status: 200 }))
+        );
+    });
+
+    it('should prefix routes with plugin name by default', async () => {
+      // Arrange
+      const postsManager = new CollectionTypeManager(
+        { resource: 'posts', plugin: { name: 'blog' } },
+        mockHttpClient
+      );
+
+      // Act
+      await postsManager.find();
+
+      // Assert - Should make request to /blog/posts
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/blog/posts', {
+        method: 'GET',
+      });
+    });
+
+    it('should allow disabling prefix with empty string', async () => {
+      // Arrange
+      const usersManager = new CollectionTypeManager(
+        { resource: 'users', plugin: { name: 'users-permissions', prefix: '' } },
+        mockHttpClient
+      );
+
+      // Act
+      await usersManager.find();
+
+      // Assert - Should make request to /users (no prefix)
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/users', {
+        method: 'GET',
+      });
+    });
+
+    it('should allow custom prefix override', async () => {
+      // Arrange
+      const contentManager = new CollectionTypeManager(
+        { resource: 'articles', plugin: { name: 'content-manager', prefix: 'custom' } },
+        mockHttpClient
+      );
+
+      // Act
+      await contentManager.find();
+
+      // Assert - Should make request to /custom/articles
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/custom/articles', {
+        method: 'GET',
+      });
+    });
+
+    it('should use explicit path when provided, ignoring plugin prefixing', async () => {
+      // Arrange
+      const customManager = new CollectionTypeManager(
+        {
+          resource: 'posts',
+          plugin: { name: 'blog', prefix: 'ignoreMe' },
+          path: '/custom/endpoint',
+        },
+        mockHttpClient
+      );
+
+      // Act
+      await customManager.find();
+
+      // Assert - Should use explicit path, ignoring plugin
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/custom/endpoint', {
+        method: 'GET',
+      });
+    });
+  });
 });

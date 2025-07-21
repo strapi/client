@@ -9,6 +9,7 @@ import type { ContentTypeManagerOptions } from '../abstract';
 
 const debug = createDebug('strapi:ct:collection');
 
+const pluginsThatDoNotWrapDataAttribute = ['users-permissions'];
 /**
  * A service class designed for interacting with a collection-type resource in a Strapi app.
  *
@@ -36,6 +37,20 @@ export class CollectionTypeManager extends AbstractContentTypeManager {
     super(options, httpClient);
 
     debug('initialized a new "collection" manager with %o', options);
+  }
+
+  /**
+   * Determines if the current resource should have its payload wrapped in a "data" object.
+   *
+   * NOTE: the users-permissions plugin has a different API contract than regular content-types.
+   * It expects raw payload data without wrapping in a "data" object.
+   * As this is a Strapi managed plugin, we support this edge case here.
+   *
+   * @private
+   * @returns true if the resource should use data wrapping (regular content-types)
+   */
+  private shouldWrapDataBodyAttribute(): boolean {
+    return !pluginsThatDoNotWrapDataAttribute.includes(this._pluginName ?? '');
   }
 
   /**
@@ -149,8 +164,8 @@ export class CollectionTypeManager extends AbstractContentTypeManager {
 
     const response = await this._httpClient.post(
       url,
-      // Wrap the payload in a data object
-      JSON.stringify({ data }),
+      // Conditionally wrap the payload in a data object
+      JSON.stringify(this.shouldWrapDataBodyAttribute() ? { data } : data),
       // By default POST requests sets the content-type to text/plain
       { headers: { 'Content-Type': 'application/json' } }
     );
@@ -201,8 +216,8 @@ export class CollectionTypeManager extends AbstractContentTypeManager {
 
     const response = await this._httpClient.put(
       url,
-      // Wrap the payload in a data object
-      JSON.stringify({ data }),
+      // Conditionally wrap the payload in a data object
+      JSON.stringify(this.shouldWrapDataBodyAttribute() ? { data } : data),
       // By default PUT requests sets the content-type to text/plain
       { headers: { 'Content-Type': 'application/json' } }
     );
