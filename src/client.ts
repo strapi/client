@@ -309,7 +309,7 @@ export class StrapiClient {
    *
    * @param resource - The plural name of the collection to interact with.
    *                     This should match the collection name as defined in the Strapi app.
-   * @param [options] - Optional parameter to specify additional configuration such as custom API path.
+   * @param [options] - Optional parameter to specify additional configuration such as custom API path or plugin context.
    *
    * @returns An instance of {@link CollectionTypeManager} for the given {@link resource}.
    *
@@ -340,15 +340,34 @@ export class StrapiClient {
    * // Example with a custom API path
    * const customArticles = client.collection('articles', { path: '/custom-articles-path' });
    * const customAllArticles = await customArticles.find();
+   *
+   * // Example: Working with users-permissions plugin (no data wrapping, no route prefix)
+   * const users = client.collection('users', {
+   *   plugin: {
+   *     name: 'users-permissions',
+   *     prefix: '' // some users-permissions routes are not prefixed
+   *   }
+   * });
+   *
+   *
+   * // Example: Working with a custom plugin (routes prefixed by default)
+   * const posts = client.collection('posts', {
+   *   plugin: {
+   *     name: 'blog', // routes are prefixed with the plugin name by default
+   *   }
+   * });
+   *
+   * // This makes requests to /blog/posts
+   * const newPost = await posts.create({ title: 'My Post', content: 'Post content' });
    * ```
    *
    * @see CollectionTypeManager
    * @see StrapiClient
    */
   collection(resource: string, options: ClientCollectionOptions = {}) {
-    const { path } = options;
+    const { path, plugin } = options;
 
-    return new CollectionTypeManager({ resource, path }, this._httpClient);
+    return new CollectionTypeManager({ resource, path, plugin }, this._httpClient);
   }
 
   /**
@@ -395,5 +414,5 @@ export class StrapiClient {
 }
 
 // Local Client Types
-export type ClientCollectionOptions = Pick<ContentTypeManagerOptions, 'path'>;
+export type ClientCollectionOptions = Pick<ContentTypeManagerOptions, 'path' | 'plugin'>;
 export type SingleCollectionOptions = Pick<ContentTypeManagerOptions, 'path'>;

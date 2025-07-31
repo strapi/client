@@ -36,13 +36,30 @@ interface Category extends API.Document {
   publishedAt: string | null;
 }
 
+interface User extends API.Document {
+  id: number;
+  username: string;
+  email: string;
+  provider: string;
+  confirmed: boolean;
+  blocked: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 type CategoryResponseCollection = API.DocumentResponseCollection<Category>;
+type UserResponseCollection = API.DocumentResponseCollection<User>;
+// For users-permissions plugin, responses are direct arrays/objects, not wrapped in { data: ... }
+type UsersArray = User[];
+type UserSingle = User;
 
 async function runDemo() {
   await demonstrateBasicCategoryFunctionality();
   await demonstrateCategoryImageInteractions();
   await demonstrateDirectFileOperations();
   await demonstrateFileUpdates();
+  await demonstrateUserCreation();
+  await demonstrateUserUpdate();
   await demonstrateFileDeletion();
 }
 
@@ -187,6 +204,125 @@ async function demonstrateFileUpdates() {
     console.log(
       'Tech category not found. Make sure you have a category with slug "tech" in your Strapi instance.'
     );
+  }
+}
+
+async function demonstrateUserCreation() {
+  console.log(os.EOL);
+  console.log('=== Users-Permissions User Creation ===');
+  console.log(os.EOL);
+
+  try {
+    // Use plugin-specific configuration for users-permissions
+    const users = client.collection('users', {
+      plugin: { name: 'users-permissions', prefix: '' },
+    });
+
+    // Generate unique user data for the demo
+    const timestamp = Date.now();
+    const newUserData = {
+      username: `demo_user_${timestamp}`,
+      email: `demo_user_${timestamp}@example.com`,
+      password: 'DemoPassword123!',
+      role: 1,
+    };
+
+    console.log('Creating new user with users-permissions plugin configuration...');
+    console.log(`  Username: ${newUserData.username}`);
+    console.log(`  Email: ${newUserData.email}`);
+    console.log(`  Role: ${newUserData.role}`);
+
+    const createdUser = (await users.create(newUserData)) as unknown as UserSingle;
+
+    console.log(os.EOL);
+    console.log('User created successfully!');
+    console.log(`  ID: ${createdUser.id}`);
+    console.log(`  Username: ${createdUser.username}`);
+    console.log(`  Email: ${createdUser.email}`);
+    console.log(`  Provider: ${createdUser.provider}`);
+    console.log(`  Confirmed: ${createdUser.confirmed}`);
+    console.log(`  Blocked: ${createdUser.blocked}`);
+    console.log(`  Created At: ${new Date(createdUser.createdAt).toLocaleString()}`);
+
+    console.log(os.EOL);
+    console.log('User will remain in the system for subsequent update demonstrations.');
+  } catch (error) {
+    console.error('Error during user creation demonstration:', error);
+    console.log(os.EOL);
+    console.log('Note: Make sure you have the appropriate permissions to create users.');
+    console.log('The API token needs to have access to the Users-Permissions plugin.');
+    console.log('Also ensure that user registration is enabled in the Users-Permissions settings.');
+  }
+}
+
+async function demonstrateUserUpdate() {
+  console.log(os.EOL);
+  console.log('=== Users-Permissions User Update ===');
+  console.log(os.EOL);
+
+  try {
+    // Get all users to find one to update
+    const users = client.collection('users', { plugin: { name: 'users-permissions', prefix: '' } });
+    const userDocs = (await users.find()) as unknown as UsersArray;
+
+    console.log('User docs:');
+    console.log(JSON.stringify(userDocs, null, 2));
+
+    if (!(userDocs && userDocs.length > 0)) {
+      console.log(
+        'No users found in the system. Please create a user first to demonstrate updates.'
+      );
+      return;
+    }
+
+    // Get the first user for demonstration
+    const userToUpdate = userDocs[0];
+    console.log(`Found user to update: ${userToUpdate.username} (${userToUpdate.email})`);
+    console.log(`User ID: ${userToUpdate.id}`);
+    console.log(`Current confirmed status: ${userToUpdate.confirmed}`);
+    console.log(`Current blocked status: ${userToUpdate.blocked}`);
+
+    // Update user properties - we'll update the username for demonstration
+    // Note: Be careful with sensitive fields like email, password
+    const originalUsername = userToUpdate.username;
+    const updatedUsername = `${originalUsername}_demo_${Date.now()}`;
+
+    const updatedUserData = {
+      username: updatedUsername,
+    };
+
+    console.log(os.EOL);
+    console.log('Updating user...');
+    console.log(`  Changing username from "${originalUsername}" to "${updatedUsername}"`);
+
+    const updatedUser = (await users.update(
+      userToUpdate.id.toString(),
+      updatedUserData
+    )) as unknown as UserSingle;
+
+    console.log('Updated user:');
+    console.log(JSON.stringify(updatedUser, null, 2));
+
+    console.log(os.EOL);
+    console.log('User updated successfully!');
+    console.log(`  Username: ${updatedUser.username}`);
+    console.log(`  Email: ${updatedUser.email}`);
+    console.log(`  Confirmed: ${updatedUser.confirmed}`);
+    console.log(`  Blocked: ${updatedUser.blocked}`);
+    console.log(`  Updated At: ${new Date(updatedUser.updatedAt).toLocaleString()}`);
+
+    // Revert the change to keep the demo non-destructive
+    console.log(os.EOL);
+    console.log('Reverting the change to maintain demo integrity...');
+    const revertedUser = (await users.update(userToUpdate.id.toString(), {
+      username: originalUsername,
+    })) as unknown as UserSingle;
+    console.log(`  Username reverted to: ${revertedUser.username}`);
+  } catch (error) {
+    console.error('Error during user update demonstration:', error);
+    console.log(os.EOL);
+    console.log('Note: Make sure you have the appropriate permissions to update users.');
+    console.log('The API token needs to have access to the Users-Permissions plugin.');
   }
 }
 
