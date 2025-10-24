@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { StrapiError, StrapiInitializationError, StrapiValidationError } from '../../../src/errors';
 
 describe('Strapi Errors', () => {

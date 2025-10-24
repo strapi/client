@@ -1,8 +1,10 @@
+import { describe, it, expect, afterEach, vi } from 'vitest';
+
 import { HttpInterceptorManager } from '../../../src/http/interceptor-manager';
 
 describe('HttpInterceptorManager', () => {
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('use()', () => {
@@ -10,7 +12,7 @@ describe('HttpInterceptorManager', () => {
       // Arrange
       const manager = new HttpInterceptorManager<number>();
 
-      const mockFulfilled = jest.fn((value) => value + 1);
+      const mockFulfilled = vi.fn((value) => value + 1);
 
       // Act
       manager.use(mockFulfilled);
@@ -26,8 +28,8 @@ describe('HttpInterceptorManager', () => {
       // Arrange
       const manager = new HttpInterceptorManager<number>();
 
-      const mockFulfilled = jest.fn((value) => value + 1);
-      const mockRejected = jest.fn((error) => error);
+      const mockFulfilled = vi.fn((value) => value + 1);
+      const mockRejected = vi.fn((error) => error);
 
       // Act
       manager.use(mockFulfilled, mockRejected);
@@ -59,7 +61,7 @@ describe('HttpInterceptorManager', () => {
       // Arrange
       const manager = new HttpInterceptorManager<number>();
 
-      const mockRejected = jest.fn(() => 0);
+      const mockRejected = vi.fn(() => 0);
 
       // Act
       manager.use((value) => {
@@ -138,8 +140,8 @@ describe('HttpInterceptorManager', () => {
       // Arrange
       const manager = new HttpInterceptorManager<any>();
 
-      const mockRejected1 = jest.fn((error) => `${error}-intercepted1`);
-      const mockRejected2 = jest.fn((error) => `${error}-intercepted2`);
+      const mockRejected1 = vi.fn((error) => `${error}-intercepted1`);
+      const mockRejected2 = vi.fn((error) => `${error}-intercepted2`);
 
       // Act
       manager.use(undefined, mockRejected1);

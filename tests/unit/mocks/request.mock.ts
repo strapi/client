@@ -1,9 +1,11 @@
+import { vi } from 'vitest';
+
 export const mockRequest = (method: string, url: string): Request => ({
   method,
   url,
   headers: new Headers(),
   redirect: 'follow',
-  clone: jest.fn(),
+  clone: vi.fn(),
   body: null,
   bodyUsed: false,
   cache: 'default',
@@ -15,10 +17,10 @@ export const mockRequest = (method: string, url: string): Request => ({
   referrerPolicy: 'no-referrer',
   destination: '',
   signal: AbortSignal.any([]),
-  arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
-  blob: jest.fn().mockResolvedValue(new Blob()),
-  bytes: jest.fn().mockResolvedValue(new Uint8Array()),
-  formData: jest.fn().mockResolvedValue(new FormData()),
-  text: jest.fn().mockResolvedValue(''),
-  json: jest.fn().mockResolvedValue({}),
+  arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
+  blob: vi.fn().mockResolvedValue(new Blob()),
+  bytes: vi.fn().mockResolvedValue(new Uint8Array()),
+  formData: vi.fn().mockResolvedValue(new FormData()),
+  text: vi.fn().mockResolvedValue(''),
+  json: vi.fn().mockResolvedValue({}),
 });

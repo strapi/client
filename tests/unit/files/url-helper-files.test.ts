@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { FileQueryParams } from '../../../src/files/types';
 import { URLHelper } from '../../../src/utilities';
 

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { HttpInterceptors } from '../../../src/interceptors';
 import { HTTP_ERROR_ASSOCIATIONS } from '../../fixtures/http-error-associations';
 

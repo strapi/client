@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { SingleTypeManager } from '../../../../src/content-types';
 import { MockHttpClient } from '../../mocks';
 
@@ -7,17 +9,13 @@ describe('SingleTypeManager CRUD Methods', () => {
   const mockHttpClient = mockHttpClientFactory(config.baseURL);
 
   beforeEach(() => {
-    jest
-      .spyOn(MockHttpClient.prototype, 'request')
-      .mockImplementation(() =>
-        Promise.resolve(
-          new Response(JSON.stringify({ data: { id: 1 }, meta: {} }), { status: 200 })
-        )
-      );
+    vi.spyOn(MockHttpClient.prototype, 'request').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ data: { id: 1 }, meta: {} }), { status: 200 }))
+    );
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Simple Config', () => {
@@ -143,13 +141,9 @@ describe('SingleTypeManager CRUD Methods', () => {
 
   describe('Plugin Support', () => {
     beforeEach(() => {
-      jest
-        .spyOn(MockHttpClient.prototype, 'request')
-        .mockImplementation(() =>
-          Promise.resolve(
-            new Response(JSON.stringify({ id: 1, setting: 'value' }), { status: 200 })
-          )
-        );
+      vi.spyOn(MockHttpClient.prototype, 'request').mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ id: 1, setting: 'value' }), { status: 200 }))
+      );
     });
 
     it('should NOT wrap data when plugin is set to "users-permissions"', async () => {

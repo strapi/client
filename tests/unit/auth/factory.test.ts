@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { AuthProviderFactory } from '../../../src/auth';
 import { StrapiError } from '../../../src/errors';
 import { MockAuthProvider } from '../mocks';
@@ -21,7 +23,7 @@ describe('AuthProviderFactory', () => {
 
   it('should create a valid instance for registered providers', () => {
     // Arrange
-    const mockCreator = jest.fn(() => new MockAuthProvider());
+    const mockCreator = vi.fn(() => new MockAuthProvider());
 
     // Act
     factory.register(MockAuthProvider.identifier, mockCreator);

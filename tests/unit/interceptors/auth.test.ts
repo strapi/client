@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { HTTPAuthorizationError } from '../../../src/errors';
 import { AuthInterceptors } from '../../../src/interceptors';
 import { MockAuthManager, MockAuthProvider, MockHttpClient, MockURLValidator } from '../mocks';
@@ -12,13 +14,13 @@ describe('AuthInterceptors', () => {
     mockAuthManager = new MockAuthManager();
     mockHttpClient = new MockHttpClient({ baseURL: 'https://example.com' }, mockURLValidator);
 
-    jest.spyOn(mockAuthManager, 'authenticate');
-    jest.spyOn(mockAuthManager, 'handleUnauthorizedError');
-    jest.spyOn(mockAuthManager, 'authenticateRequest');
+    vi.spyOn(mockAuthManager, 'authenticate');
+    vi.spyOn(mockAuthManager, 'handleUnauthorizedError');
+    vi.spyOn(mockAuthManager, 'authenticateRequest');
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('ensurePreAuthentication', () => {
@@ -73,7 +75,7 @@ describe('AuthInterceptors', () => {
       const interceptor = AuthInterceptors.authenticateRequests(mockAuthManager);
       const request = new Request('https://example.com');
 
-      jest.spyOn(request.headers, 'set');
+      vi.spyOn(request.headers, 'set');
 
       // Act
       interceptor({ request });

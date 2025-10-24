@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { HTTPNotFoundError, HTTPForbiddenError } from '../../../src/errors';
 import {
   FilesManager,
@@ -12,16 +14,18 @@ import { HttpClient } from '../../../src/http';
 import { mockFile, mockFiles } from '../../fixtures/files';
 import { MockHttpClient } from '../mocks';
 
+import type { Mock } from 'vitest';
+
 describe('FilesManager', () => {
   let httpClient: HttpClient;
   let filesManager: FilesManager;
-  let mockFetch: jest.Mock;
+  let mockFetch: Mock;
 
   beforeEach(() => {
     // Setup for direct fetch mocking approach
-    mockFetch = jest.fn();
+    mockFetch = vi.fn();
     // Save and mock the fetch function
-    jest.spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
+    vi.spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
 
     // Create a regular HttpClient that will use the mocked fetch
     httpClient = new HttpClient({ baseURL: 'http://example.com/api' });
@@ -29,7 +33,7 @@ describe('FilesManager', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('constructor', () => {
@@ -47,7 +51,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Act
@@ -62,7 +66,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Act
@@ -80,7 +84,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce([mockFile]),
+        json: vi.fn().mockResolvedValueOnce([mockFile]),
       });
 
       // Act
@@ -100,7 +104,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Act
@@ -119,7 +123,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Act
@@ -139,7 +143,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce([mockFile]),
+        json: vi.fn().mockResolvedValueOnce([mockFile]),
       });
 
       // Act
@@ -182,7 +186,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -197,7 +201,7 @@ describe('FilesManager', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -213,7 +217,7 @@ describe('FilesManager', () => {
 
     it('should throw an error for empty response body', async () => {
       // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
+      vi.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
         return Promise.resolve(new Response('', { status: 200 }));
       });
 
@@ -303,7 +307,7 @@ describe('FilesManager', () => {
 
     it('should handle unexpected JSON parsing errors', async () => {
       // Arrange
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
+      vi.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
         return Promise.resolve(new Response('invalid json', { status: 200 }));
       });
 
@@ -318,13 +322,13 @@ describe('FilesManager', () => {
       // First, mock the find method to return a list
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Then, mock the findOne method to return a specific file
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -389,7 +393,7 @@ describe('FilesManager', () => {
     it('should handle JSON parse errors in responses', async () => {
       // Arrange
       // Mock a response with invalid JSON
-      jest.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
+      vi.spyOn(MockHttpClient.prototype, 'fetch').mockImplementationOnce(() => {
         return Promise.resolve(new Response('this is not valid json', { status: 200 }));
       });
 
@@ -472,7 +476,7 @@ describe('FilesManager', () => {
   describe('error handling with interceptors', () => {
     it('should properly add a error mapping interceptor to the HTTP client', async () => {
       // Arrange - Spy on the create method
-      const createSpy = jest.spyOn(httpClient, 'create');
+      const createSpy = vi.spyOn(httpClient, 'create');
 
       const fileId = 999;
       const mockRequest = new Request(`http://example.com/api/upload/files/${fileId}`);
@@ -517,11 +521,11 @@ describe('FilesManager', () => {
     it('should pass fileId to createFileHttpClient in findOne method', async () => {
       // Arrange
       // Create spy on the private method using any
-      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+      const createSpy = vi.spyOn(filesManager as any, 'createFileHttpClient');
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -552,7 +556,7 @@ describe('FilesManager', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(updatedFile),
+        json: vi.fn().mockResolvedValueOnce(updatedFile),
       });
 
       // Act
@@ -607,7 +611,7 @@ describe('FilesManager', () => {
         ok: false,
         status: 400,
         statusText: 'Bad Request',
-        json: jest.fn().mockRejectedValueOnce(new Error('Bad request')),
+        json: vi.fn().mockRejectedValueOnce(new Error('Bad request')),
       });
 
       // Act & Assert
@@ -617,11 +621,11 @@ describe('FilesManager', () => {
     it('should pass fileId to createFileHttpClient', async () => {
       // Arrange
       // Create spy on the private method using any
-      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+      const createSpy = vi.spyOn(filesManager as any, 'createFileHttpClient');
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -638,7 +642,7 @@ describe('FilesManager', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+        json: vi.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
       });
 
       // Act
@@ -715,12 +719,12 @@ describe('FilesManager', () => {
     it('should pass fileId to createFileHttpClient', async () => {
       // Arrange
       // Create spy on the private method using any
-      const createSpy = jest.spyOn(filesManager as any, 'createFileHttpClient');
+      const createSpy = vi.spyOn(filesManager as any, 'createFileHttpClient');
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+        json: vi.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
       });
 
       // Act
@@ -760,7 +764,7 @@ describe('FilesManager', () => {
       const file = new Blob(['test content'], { type: 'image/jpeg' });
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+        json: vi.fn().mockResolvedValueOnce(mockUploadResponse),
       });
 
       // Act
@@ -792,7 +796,7 @@ describe('FilesManager', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+        json: vi.fn().mockResolvedValueOnce(mockUploadResponse),
       });
 
       // Act
@@ -817,7 +821,7 @@ describe('FilesManager', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+        json: vi.fn().mockResolvedValueOnce(mockUploadResponse),
       });
 
       // Act & Assert
@@ -844,7 +848,7 @@ describe('FilesManager', () => {
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+        json: vi.fn().mockResolvedValueOnce(mockUploadResponse),
       });
 
       // Act
@@ -894,11 +898,11 @@ describe('FilesManager', () => {
         data: 'some data',
       };
 
-      const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+      const consoleWarnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockUploadResponse),
+        json: vi.fn().mockResolvedValueOnce(mockUploadResponse),
       });
 
       // Act

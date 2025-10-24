@@ -1,3 +1,5 @@
+import { describe, it, expect, vi } from 'vitest';
+
 import { ApiTokenAuthProvider, AuthManager, UsersPermissionsAuthProvider } from '../../../src/auth';
 import { MockAuthProvider, MockAuthProviderFactory, MockHttpClient } from '../mocks';
 
@@ -99,7 +101,7 @@ describe('AuthManager', () => {
     const authManager = new AuthManager(new MockAuthProviderFactory());
     authManager.setStrategy(MockAuthProvider.identifier, {});
 
-    jest.spyOn(MockAuthProvider.prototype, 'authenticate').mockImplementationOnce(() => {
+    vi.spyOn(MockAuthProvider.prototype, 'authenticate').mockImplementationOnce(() => {
       throw new Error();
     });
 

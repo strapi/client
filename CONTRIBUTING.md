@@ -151,7 +151,7 @@ pnpm test
 Run all the tests and generate a test coverage report with:
 
 ```bash
-pnpm test:cov
+pnpm test:coverage
 ```
 
 > **Note:** you can pass any jest argument at the end of both commands, this can be useful to specific run tests based
@@ -276,7 +276,7 @@ Before submitting a PR (pull request), verify that all checks pass:
    ```
 4. **Unit Tests**
    ```bash
-   pnpm test:cov
+   pnpm test:coverage
    ```
 5. **Production Build Check**
    ```bash
@@ -360,7 +360,7 @@ commands**:
 - **Unit Tests**: runs all tests and checks if test coverage meets the required threshold.
 
   ```bash
-  pnpm test:cov
+  pnpm test:coverage
   ```
 
 - **Build Check (Production)**: confirms that the client can successfully build for production.

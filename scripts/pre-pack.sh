@@ -10,7 +10,7 @@ pnpm lint  &&
 pnpm ts:check &&
 
 # Run tests with coverage
-pnpm test:cov &&
+pnpm test:coverage &&
 
 # Run the production build
 NODE_ENV=production pnpm build:clean

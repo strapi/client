@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { BaseQueryParams } from '../../../src/types/content-api';
 import { URLHelper } from '../../../src/utilities';
 
