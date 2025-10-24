@@ -207,6 +207,33 @@ const updatedArticle = await articles.update('article-document-id', { title: 'Up
 await articles.delete('article-id');
 ```
 
+#### Working with Users (Users-Permissions Plugin)
+
+The client automatically detects and handles special Strapi content-types like `users` from the users-permissions plugin. You can work with them seamlessly:
+
+```typescript
+// Auto-detected as users-permissions - no configuration needed!
+const users = client.collection('users');
+
+// Create a new user
+await users.create({
+  username: 'john',
+  email: 'john@example.com',
+  password: 'SecurePass123!',
+  role: 1,
+});
+
+// Find users
+const allUsers = await users.find();
+
+// Update a user
+await users.update('user-id', { username: 'john_updated' });
+```
+
+> **Note:** The users-permissions plugin has a different API contract than regular content-types. The client automatically handles this by not wrapping the payload in a `data` object.
+
+#### Custom Path
+
 You can also customize the root path for requests by providing a value for the `path` option:
 
 ```typescript

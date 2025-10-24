@@ -213,10 +213,8 @@ async function demonstrateUserCreation() {
   console.log(os.EOL);
 
   try {
-    // Use plugin-specific configuration for users-permissions
-    const users = client.collection('users', {
-      plugin: { name: 'users-permissions', prefix: '' },
-    });
+    // Auto-detected as users-permissions - no plugin configuration needed!
+    const users = client.collection('users');
 
     // Generate unique user data for the demo
     const timestamp = Date.now();
@@ -227,7 +225,7 @@ async function demonstrateUserCreation() {
       role: 1,
     };
 
-    console.log('Creating new user with users-permissions plugin configuration...');
+    console.log('Creating new user (auto-detected as users-permissions)...');
     console.log(`  Username: ${newUserData.username}`);
     console.log(`  Email: ${newUserData.email}`);
     console.log(`  Role: ${newUserData.role}`);
@@ -262,7 +260,10 @@ async function demonstrateUserUpdate() {
 
   try {
     // Get all users to find one to update
-    const users = client.collection('users', { plugin: { name: 'users-permissions', prefix: '' } });
+    const users = client.collection(
+      // Auto-detected as users-permissions - no plugin configuration needed!
+      'users'
+    );
     const userDocs = (await users.find()) as unknown as UsersArray;
 
     console.log('User docs:');

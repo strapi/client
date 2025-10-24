@@ -13,6 +13,21 @@ import type { HttpClientConfig } from './http';
 
 const debug = createDebug('strapi:core');
 
+/**
+ * Mapping of well-known Strapi resource names to their plugin configurations.
+ * This enables automatic handling of special Strapi content-types that have
+ * different API contracts than regular content-types.
+ */
+const WELL_KNOWN_STRAPI_RESOURCES: Record<string, { plugin: { name: string; prefix: string } }> = {
+  // Users from users-permissions plugin don't wrap data and have no route prefix
+  users: {
+    plugin: {
+      name: 'users-permissions',
+      prefix: '',
+    },
+  },
+};
+
 export interface StrapiClientConfig {
   /** The base URL of the Strapi content API, required for all client library operations. */
   baseURL: string;
@@ -341,14 +356,9 @@ export class StrapiClient {
    * const customArticles = client.collection('articles', { path: '/custom-articles-path' });
    * const customAllArticles = await customArticles.find();
    *
-   * // Example: Working with users-permissions plugin (no data wrapping, no route prefix)
-   * const users = client.collection('users', {
-   *   plugin: {
-   *     name: 'users-permissions',
-   *     prefix: '' // some users-permissions routes are not prefixed
-   *   }
-   * });
-   *
+   * // Example: Working with users (auto-detected as users-permissions plugin)
+   * const users = client.collection('users');
+   * await users.create({ username: 'john', email: 'john@example.com', password: 'Test1234!' });
    *
    * // Example: Working with a custom plugin (routes prefixed by default)
    * const posts = client.collection('posts', {
@@ -367,7 +377,11 @@ export class StrapiClient {
   collection(resource: string, options: ClientCollectionOptions = {}) {
     const { path, plugin } = options;
 
-    return new CollectionTypeManager({ resource, path, plugin }, this._httpClient);
+    // Auto-detect well-known Strapi resources and apply their plugin configuration
+    // if no explicit plugin option is provided
+    const effectivePlugin = plugin ?? WELL_KNOWN_STRAPI_RESOURCES[resource]?.plugin ?? undefined;
+
+    return new CollectionTypeManager({ resource, path, plugin: effectivePlugin }, this._httpClient);
   }
 
   /**
