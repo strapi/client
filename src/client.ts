@@ -2,6 +2,7 @@ import createDebug from 'debug';
 
 import { AuthManager } from './auth';
 import { CollectionTypeManager, SingleTypeManager } from './content-types';
+import { WELL_KNOWN_STRAPI_RESOURCES } from './content-types/constants';
 import { StrapiError, StrapiInitializationError } from './errors';
 import { FilesManager } from './files';
 import { HttpClient } from './http';
@@ -12,21 +13,6 @@ import type { ContentTypeManagerOptions } from './content-types/abstract';
 import type { HttpClientConfig } from './http';
 
 const debug = createDebug('strapi:core');
-
-/**
- * Mapping of well-known Strapi resource names to their plugin configurations.
- * This enables automatic handling of special Strapi content-types that have
- * different API contracts than regular content-types.
- */
-const WELL_KNOWN_STRAPI_RESOURCES: Record<string, { plugin: { name: string; prefix: string } }> = {
-  // Users from users-permissions plugin don't wrap data and have no route prefix
-  users: {
-    plugin: {
-      name: 'users-permissions',
-      prefix: '',
-    },
-  },
-};
 
 export interface StrapiClientConfig {
   /** The base URL of the Strapi content API, required for all client library operations. */
