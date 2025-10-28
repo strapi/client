@@ -2,7 +2,7 @@ import createDebug from 'debug';
 
 import { AuthManager } from './auth';
 import { CollectionTypeManager, SingleTypeManager } from './content-types';
-import { WELL_KNOWN_STRAPI_RESOURCES } from './content-types/constants';
+import { getWellKnownCollection, getWellKnownSingle } from './content-types/constants';
 import { StrapiError, StrapiInitializationError } from './errors';
 import { FilesManager } from './files';
 import { HttpClient } from './http';
@@ -363,9 +363,10 @@ export class StrapiClient {
   collection(resource: string, options: ClientCollectionOptions = {}) {
     const { path, plugin } = options;
 
-    // Auto-detect well-known Strapi resources and apply their plugin configuration
+    // Auto-detect well-known collection resources and apply their plugin configuration
     // if no explicit plugin option is provided
-    const effectivePlugin = plugin ?? WELL_KNOWN_STRAPI_RESOURCES[resource]?.plugin ?? undefined;
+    const wellKnownConfig = getWellKnownCollection(resource);
+    const effectivePlugin = plugin ?? wellKnownConfig?.plugin ?? undefined;
 
     return new CollectionTypeManager({ resource, path, plugin: effectivePlugin }, this._httpClient);
   }
@@ -407,12 +408,17 @@ export class StrapiClient {
    * @see StrapiClient
    */
   single(resource: string, options: SingleCollectionOptions = {}) {
-    const { path } = options;
+    const { path, plugin } = options;
 
-    return new SingleTypeManager({ resource, path }, this._httpClient);
+    // Auto-detect well-known single-type resources and apply their plugin configuration
+    // if no explicit plugin option is provided
+    const wellKnownConfig = getWellKnownSingle(resource);
+    const effectivePlugin = plugin ?? wellKnownConfig?.plugin ?? undefined;
+
+    return new SingleTypeManager({ resource, path, plugin: effectivePlugin }, this._httpClient);
   }
 }
 
 // Local Client Types
 export type ClientCollectionOptions = Pick<ContentTypeManagerOptions, 'path' | 'plugin'>;
-export type SingleCollectionOptions = Pick<ContentTypeManagerOptions, 'path'>;
+export type SingleCollectionOptions = Pick<ContentTypeManagerOptions, 'path' | 'plugin'>;

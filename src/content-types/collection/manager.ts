@@ -3,7 +3,7 @@ import createDebug from 'debug';
 import { HttpClient } from '../../http';
 import { URLHelper } from '../../utilities';
 import { AbstractContentTypeManager } from '../abstract';
-import { pluginsThatDoNotWrapDataAttribute } from '../constants';
+import { shouldWrapData } from '../constants';
 
 import type * as API from '../../types/content-api';
 import type { ContentTypeManagerOptions } from '../abstract';
@@ -42,15 +42,14 @@ export class CollectionTypeManager extends AbstractContentTypeManager {
   /**
    * Determines if the current resource should have its payload wrapped in a "data" object.
    *
-   * NOTE: the users-permissions plugin has a different API contract than regular content-types.
-   * It expects raw payload data without wrapping in a "data" object.
-   * As this is a Strapi managed plugin, we support this edge case here.
+   * NOTE: Some plugins (like users-permissions) have different API contracts than regular content-types.
+   * They expect raw payload data without wrapping in a "data" object.
    *
    * @private
    * @returns true if the resource should use data wrapping (regular content-types)
    */
   private shouldWrapDataBodyAttribute(): boolean {
-    return !pluginsThatDoNotWrapDataAttribute.includes(this._pluginName ?? '');
+    return shouldWrapData(this._pluginName);
   }
 
   /**

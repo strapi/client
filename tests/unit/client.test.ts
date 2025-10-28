@@ -275,6 +275,33 @@ describe('Strapi', () => {
       expect(single).toBeInstanceOf(SingleTypeManager);
       expect(single).toHaveProperty('_options', { resource });
     });
+
+    it('should support plugin option for single-types', () => {
+      // Arrange
+      const resource = 'settings';
+      const customPlugin = { name: 'custom-plugin', prefix: 'custom' };
+      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
+
+      const mockValidator = new MockStrapiConfigValidator();
+      const mockAuthManager = new MockAuthManager();
+
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
+
+      // Act
+      const single = client.single(resource, { plugin: customPlugin });
+
+      // Assert
+      expect(single).toBeInstanceOf(SingleTypeManager);
+      expect(single).toHaveProperty('_options', {
+        resource: 'settings',
+        plugin: customPlugin,
+      });
+    });
   });
 
   describe('Custom Interceptors', () => {

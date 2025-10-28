@@ -140,4 +140,71 @@ describe('SingleTypeManager CRUD Methods', () => {
       });
     });
   });
+
+  describe('Plugin Support', () => {
+    beforeEach(() => {
+      jest
+        .spyOn(MockHttpClient.prototype, 'request')
+        .mockImplementation(() =>
+          Promise.resolve(
+            new Response(JSON.stringify({ id: 1, setting: 'value' }), { status: 200 })
+          )
+        );
+    });
+
+    it('should NOT wrap data when plugin is set to "users-permissions"', async () => {
+      // Arrange
+      const settingsManager = new SingleTypeManager(
+        { resource: 'settings', plugin: { name: 'users-permissions', prefix: '' } },
+        mockHttpClient
+      );
+      const payload = { setting1: 'value1', setting2: 'value2' };
+
+      // Act
+      await settingsManager.update(payload);
+
+      // Assert - Should send raw payload without data wrapping
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/settings', {
+        method: 'PUT',
+        body: JSON.stringify(payload), // No { data: payload } wrapping
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    });
+
+    it('should wrap data for regular single-types', async () => {
+      // Arrange
+      const homepageManager = new SingleTypeManager({ resource: 'homepage' }, mockHttpClient);
+      const payload = { title: 'Home', content: 'Welcome' };
+
+      // Act
+      await homepageManager.update(payload);
+
+      // Assert - Should wrap payload in data object
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/homepage', {
+        method: 'PUT',
+        body: JSON.stringify({ data: payload }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    });
+
+    it('should support plugin route prefixing', async () => {
+      // Arrange
+      const settingsManager = new SingleTypeManager(
+        { resource: 'settings', plugin: { name: 'my-plugin' } },
+        mockHttpClient
+      );
+
+      // Act
+      await settingsManager.find();
+
+      // Assert - Should prefix route with plugin name
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/my-plugin/settings', {
+        method: 'GET',
+      });
+    });
+  });
 });
