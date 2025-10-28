@@ -271,6 +271,24 @@ describe('CollectionTypeManager CRUD Methods', () => {
         },
       });
     });
+
+    it('should wrap data for regular content-types that are not users-permissions', async () => {
+      // Arrange
+      const articlesManager = new CollectionTypeManager({ resource: 'articles' }, mockHttpClient);
+      const payload = { title: 'Test Article', content: 'Test content' };
+
+      // Act
+      await articlesManager.create(payload);
+
+      // Assert - Should wrap payload in data object
+      expect(mockHttpClient.request).toHaveBeenCalledWith('/articles', {
+        method: 'POST',
+        body: JSON.stringify({ data: payload }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+    });
   });
 
   describe('Plugin Route Prefixing', () => {

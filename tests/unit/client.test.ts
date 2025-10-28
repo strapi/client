@@ -194,6 +194,62 @@ describe('Strapi', () => {
       expect(collection).toBeInstanceOf(CollectionTypeManager);
       expect(collection).toHaveProperty('_options', { resource });
     });
+
+    it('should auto-detect "users" resource and apply users-permissions plugin configuration', () => {
+      // Arrange
+      const resource = 'users';
+      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
+
+      const mockValidator = new MockStrapiConfigValidator();
+      const mockAuthManager = new MockAuthManager();
+
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
+
+      // Act
+      const collection = client.collection(resource);
+
+      // Assert
+      expect(collection).toBeInstanceOf(CollectionTypeManager);
+      expect(collection).toHaveProperty('_options', {
+        resource: 'users',
+        plugin: {
+          name: 'users-permissions',
+          prefix: '',
+        },
+      });
+    });
+
+    it('should allow explicit plugin option to override auto-detection', () => {
+      // Arrange
+      const resource = 'users';
+      const customPlugin = { name: 'custom-plugin', prefix: 'custom' };
+      const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
+
+      const mockValidator = new MockStrapiConfigValidator();
+      const mockAuthManager = new MockAuthManager();
+
+      const client = new StrapiClient(
+        config,
+        mockValidator,
+        mockAuthManager,
+        mockHttpClientFactory
+      );
+
+      // Act
+      const collection = client.collection(resource, { plugin: customPlugin });
+
+      // Assert
+      expect(collection).toBeInstanceOf(CollectionTypeManager);
+      expect(collection).toHaveProperty('_options', {
+        resource: 'users',
+        plugin: customPlugin,
+      });
+    });
   });
 
   describe('Single', () => {

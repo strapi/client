@@ -2,6 +2,7 @@ import createDebug from 'debug';
 
 import { AuthManager } from './auth';
 import { CollectionTypeManager, SingleTypeManager } from './content-types';
+import { WELL_KNOWN_STRAPI_RESOURCES } from './content-types/constants';
 import { StrapiError, StrapiInitializationError } from './errors';
 import { FilesManager } from './files';
 import { HttpClient } from './http';
@@ -341,14 +342,9 @@ export class StrapiClient {
    * const customArticles = client.collection('articles', { path: '/custom-articles-path' });
    * const customAllArticles = await customArticles.find();
    *
-   * // Example: Working with users-permissions plugin (no data wrapping, no route prefix)
-   * const users = client.collection('users', {
-   *   plugin: {
-   *     name: 'users-permissions',
-   *     prefix: '' // some users-permissions routes are not prefixed
-   *   }
-   * });
-   *
+   * // Example: Working with users (auto-detected as users-permissions plugin)
+   * const users = client.collection('users');
+   * await users.create({ username: 'john', email: 'john@example.com', password: 'Test1234!' });
    *
    * // Example: Working with a custom plugin (routes prefixed by default)
    * const posts = client.collection('posts', {
@@ -367,7 +363,11 @@ export class StrapiClient {
   collection(resource: string, options: ClientCollectionOptions = {}) {
     const { path, plugin } = options;
 
-    return new CollectionTypeManager({ resource, path, plugin }, this._httpClient);
+    // Auto-detect well-known Strapi resources and apply their plugin configuration
+    // if no explicit plugin option is provided
+    const effectivePlugin = plugin ?? WELL_KNOWN_STRAPI_RESOURCES[resource]?.plugin ?? undefined;
+
+    return new CollectionTypeManager({ resource, path, plugin: effectivePlugin }, this._httpClient);
   }
 
   /**

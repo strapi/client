@@ -3,13 +3,13 @@ import createDebug from 'debug';
 import { HttpClient } from '../../http';
 import { URLHelper } from '../../utilities';
 import { AbstractContentTypeManager } from '../abstract';
+import { pluginsThatDoNotWrapDataAttribute } from '../constants';
 
 import type * as API from '../../types/content-api';
 import type { ContentTypeManagerOptions } from '../abstract';
 
 const debug = createDebug('strapi:ct:collection');
 
-const pluginsThatDoNotWrapDataAttribute = ['users-permissions'];
 /**
  * A service class designed for interacting with a collection-type resource in a Strapi app.
  *
