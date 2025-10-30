@@ -1,7 +1,11 @@
 import createDebug from 'debug';
 
 import { AuthManager } from './auth';
-import { CollectionTypeManager, SingleTypeManager } from './content-types';
+import {
+  CollectionTypeManager,
+  SingleTypeManager,
+  UsersPermissionsUsersManager,
+} from './content-types';
 import { getWellKnownCollection, getWellKnownSingle } from './content-types/constants';
 import { StrapiError, StrapiInitializationError } from './errors';
 import { FilesManager } from './files';
@@ -9,6 +13,7 @@ import { HttpClient } from './http';
 import { AuthInterceptors, HttpInterceptors } from './interceptors';
 import { StrapiConfigValidator } from './validators';
 
+import type { UsersPermissionsUsersIdOverloads } from './content-types';
 import type { ContentTypeManagerOptions } from './content-types/abstract';
 import type { HttpClientConfig } from './http';
 
@@ -367,6 +372,15 @@ export class StrapiClient {
     // if no explicit plugin option is provided
     const wellKnownConfig = getWellKnownCollection(resource);
     const effectivePlugin = plugin ?? wellKnownConfig?.plugin ?? undefined;
+
+    if (resource === 'users' && effectivePlugin?.name === 'users-permissions') {
+      const manager = new UsersPermissionsUsersManager(
+        { resource, path, plugin: effectivePlugin },
+        this._httpClient
+      );
+
+      return manager as UsersPermissionsUsersManager & UsersPermissionsUsersIdOverloads;
+    }
 
     return new CollectionTypeManager({ resource, path, plugin: effectivePlugin }, this._httpClient);
   }
