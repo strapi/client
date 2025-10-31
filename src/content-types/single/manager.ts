@@ -3,6 +3,7 @@ import createDebug from 'debug';
 import { HttpClient } from '../../http';
 import { URLHelper } from '../../utilities';
 import { AbstractContentTypeManager } from '../abstract';
+import { shouldWrapData } from '../constants';
 
 import type * as API from '../../types/content-api';
 import type { ContentTypeManagerOptions } from '../abstract';
@@ -36,6 +37,19 @@ export class SingleTypeManager extends AbstractContentTypeManager {
     super(options, httpClient);
 
     debug('initialized a new "single" manager with %o', options);
+  }
+
+  /**
+   * Determines if the current resource should have its payload wrapped in a "data" object.
+   *
+   * NOTE: Some plugins (like users-permissions) have different API contracts than regular content-types.
+   * They expect raw payload data without wrapping in a "data" object.
+   *
+   * @private
+   * @returns true if the resource should use data wrapping (regular content-types)
+   */
+  private shouldWrapDataBodyAttribute(): boolean {
+    return shouldWrapData(this._pluginName);
   }
 
   /**
@@ -114,8 +128,8 @@ export class SingleTypeManager extends AbstractContentTypeManager {
 
     const response = await this._httpClient.put(
       url,
-      // Wrap the payload in a data object
-      JSON.stringify({ data }),
+      // Conditionally wrap the payload in a data object
+      JSON.stringify(this.shouldWrapDataBodyAttribute() ? { data } : data),
       // By default PUT requests sets the content-type to text/plain
       { headers: { 'Content-Type': 'application/json' } }
     );
