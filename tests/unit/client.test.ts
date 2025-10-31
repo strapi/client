@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { StrapiClient } from '../../src/client';
 import { CollectionTypeManager, SingleTypeManager } from '../../src/content-types';
 import {
@@ -30,17 +32,13 @@ describe('Strapi', () => {
   const mockHttpClientFactory = (config: HttpClientConfig) => new MockHttpClient(config);
 
   beforeEach(() => {
-    jest
-      .spyOn(MockHttpClient.prototype, 'fetch')
-      .mockImplementation(() =>
-        Promise.resolve(
-          new Response(JSON.stringify({ data: { id: 1 }, meta: {} }), { status: 200 })
-        )
-      );
+    vi.spyOn(MockHttpClient.prototype, 'fetch').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ data: { id: 1 }, meta: {} }), { status: 200 }))
+    );
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Initialization', () => {
@@ -54,8 +52,8 @@ describe('Strapi', () => {
       const mockValidator = new MockStrapiConfigValidator();
       const mockAuthManager = new MockAuthManager();
 
-      const validatorSpy = jest.spyOn(mockValidator, 'validateConfig');
-      const authSetStrategySpy = jest.spyOn(MockAuthManager.prototype, 'setStrategy');
+      const validatorSpy = vi.spyOn(mockValidator, 'validateConfig');
+      const authSetStrategySpy = vi.spyOn(MockAuthManager.prototype, 'setStrategy');
 
       // Act
       const client = new StrapiClient(
@@ -79,7 +77,7 @@ describe('Strapi', () => {
       const mockValidator = new MockStrapiConfigValidator();
       const mockAuthManager = new MockAuthManager();
 
-      const authSetStrategySpy = jest.spyOn(MockAuthManager.prototype, 'setStrategy');
+      const authSetStrategySpy = vi.spyOn(MockAuthManager.prototype, 'setStrategy');
 
       // Act
       const client = new StrapiClient(
@@ -109,7 +107,7 @@ describe('Strapi', () => {
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        jest.spyOn(mockAuthManager, 'setStrategy').mockImplementationOnce(() => {
+        vi.spyOn(mockAuthManager, 'setStrategy').mockImplementationOnce(() => {
           throw error;
         });
 
@@ -131,7 +129,7 @@ describe('Strapi', () => {
 
       const mockValidator = new MockStrapiConfigValidator();
 
-      const validateConfigSpy = jest.spyOn(mockValidator, 'validateConfig');
+      const validateConfigSpy = vi.spyOn(mockValidator, 'validateConfig');
 
       // Act & Assert
       expect(() => new StrapiClient(config, mockValidator)).toThrow(StrapiInitializationError);
@@ -146,7 +144,7 @@ describe('Strapi', () => {
       const config = { baseURL } satisfies StrapiClientConfig;
       const expectedError = new StrapiInitializationError(new Error('Unexpected error'));
 
-      const validateSpy = jest.spyOn(MockFlakyURLValidator.prototype, 'validate');
+      const validateSpy = vi.spyOn(MockFlakyURLValidator.prototype, 'validate');
 
       // Act
       const instantiateClient = () => {
@@ -321,7 +319,7 @@ describe('Strapi', () => {
           mockHttpClientFactory
         );
 
-        const fetchSpy = jest.spyOn(MockHttpClient.prototype, 'fetch');
+        const fetchSpy = vi.spyOn(MockHttpClient.prototype, 'fetch');
 
         // Act
         await client.fetch(path);
@@ -358,7 +356,7 @@ describe('Strapi', () => {
           mockHttpClientFactory
         );
 
-        const fetchSpy = jest.spyOn(MockHttpClient.prototype, 'fetch');
+        const fetchSpy = vi.spyOn(MockHttpClient.prototype, 'fetch');
 
         // Act
         await client.fetch(path, init);
@@ -397,8 +395,7 @@ describe('Strapi', () => {
           mockHttpClientFactory
         );
 
-        jest
-          .spyOn(MockHttpClient.prototype, 'fetch')
+        vi.spyOn(MockHttpClient.prototype, 'fetch')
           // Simulate an error in the http client low-level fetch
           .mockImplementationOnce(() => Promise.resolve(new Response(null, { status })));
 
@@ -418,7 +415,7 @@ describe('Strapi', () => {
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const authenticateSpy = jest.spyOn(MockAuthManager.prototype, 'authenticate');
+        const authenticateSpy = vi.spyOn(MockAuthManager.prototype, 'authenticate');
 
         const client = new StrapiClient(
           config,
@@ -444,7 +441,7 @@ describe('Strapi', () => {
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const authenticateRequestSpy = jest.spyOn(MockAuthManager.prototype, 'authenticateRequest');
+        const authenticateRequestSpy = vi.spyOn(MockAuthManager.prototype, 'authenticateRequest');
 
         const client = new StrapiClient(
           config,
@@ -473,7 +470,7 @@ describe('Strapi', () => {
         const mockValidator = new MockStrapiConfigValidator();
         const mockAuthManager = new MockAuthManager();
 
-        const authenticateRequestSpy = jest.spyOn(MockAuthManager.prototype, 'authenticateRequest');
+        const authenticateRequestSpy = vi.spyOn(MockAuthManager.prototype, 'authenticateRequest');
 
         const client = new StrapiClient(
           config,
@@ -513,13 +510,12 @@ describe('Strapi', () => {
         );
 
         const spies = {
-          authenticate: jest.spyOn(MockAuthManager.prototype, 'authenticate'),
-          authenticateRequest: jest.spyOn(MockAuthManager.prototype, 'authenticateRequest'),
-          handleUnauthorizedError: jest.spyOn(MockAuthManager.prototype, 'handleUnauthorizedError'),
+          authenticate: vi.spyOn(MockAuthManager.prototype, 'authenticate'),
+          authenticateRequest: vi.spyOn(MockAuthManager.prototype, 'authenticateRequest'),
+          handleUnauthorizedError: vi.spyOn(MockAuthManager.prototype, 'handleUnauthorizedError'),
         };
 
-        jest
-          .spyOn(MockHttpClient.prototype, 'fetch')
+        vi.spyOn(MockHttpClient.prototype, 'fetch')
           // Simulate an 'Unauthorized' error in the http client low-level fetch
           .mockImplementation(() => Promise.resolve(new Response('Unauthorized', { status: 401 })));
 
@@ -541,7 +537,7 @@ describe('Strapi', () => {
     // Arrange
     const config = { baseURL: 'https://localhost:1337/api' } satisfies StrapiClientConfig;
 
-    const requestSpy = jest.spyOn(MockHttpClient.prototype, 'request');
+    const requestSpy = vi.spyOn(MockHttpClient.prototype, 'request');
 
     const mockValidator = new MockStrapiConfigValidator();
     const mockAuthManager = new MockAuthManager();

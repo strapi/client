@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { ApiTokenAuthProvider, ApiTokenAuthProviderOptions } from '../../../../src/auth';
 import { StrapiValidationError } from '../../../../src/errors';
 
@@ -17,10 +19,10 @@ describe('ApiTokenAuthProvider', () => {
   });
 
   describe('Preflight Validation', () => {
-    let spy: jest.SpyInstance;
+    let spy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      spy = jest.spyOn(ApiTokenAuthProvider.prototype, 'preflightValidation');
+      spy = vi.spyOn(ApiTokenAuthProvider.prototype, 'preflightValidation');
     });
 
     afterEach(() => {

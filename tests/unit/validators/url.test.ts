@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import { URLParsingError } from '../../../src/errors';
 import { URLValidator } from '../../../src/validators';
 import invalidURLs from '../../fixtures/invalid-urls.json';

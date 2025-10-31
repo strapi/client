@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, test, vi } from 'vitest';
+
 import { HttpClient } from '../../../src/http';
 import { HTTP_ERROR_ASSOCIATIONS } from '../../fixtures/http-error-associations';
 import { MockHttpClient, MockURLValidator } from '../mocks';
@@ -6,12 +8,12 @@ import type { RequestInterceptor, ResponseInterceptor } from '../../../src/http'
 
 describe('HttpClient', () => {
   let mockURLValidator: MockURLValidator;
-  let fetchSpy: jest.SpyInstance;
+  let fetchSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     mockURLValidator = new MockURLValidator();
 
-    fetchSpy = jest
+    fetchSpy = vi
       // Mock the global fetch implementation since this is testing the HTTP client capabilities
       .spyOn(globalThis, 'fetch')
       .mockImplementation(() => {
@@ -20,13 +22,13 @@ describe('HttpClient', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('Initialization', () => {
     it('should validate baseURL in constructor', () => {
       // Arrange & Act
-      const spy = jest.spyOn(mockURLValidator, 'validate');
+      const spy = vi.spyOn(mockURLValidator, 'validate');
       const httpClient = new HttpClient({ baseURL: 'https://example.com' }, mockURLValidator);
 
       // Assert
@@ -50,7 +52,7 @@ describe('HttpClient', () => {
       const baseURL = 'https://example.com';
       const newBaseURL = 'https://newurl.com';
 
-      const spy = jest.spyOn(mockURLValidator, 'validate');
+      const spy = vi.spyOn(mockURLValidator, 'validate');
 
       const httpClient = new HttpClient({ baseURL }, mockURLValidator);
 
@@ -114,7 +116,7 @@ describe('HttpClient', () => {
         // Arrange
         const httpClient = new HttpClient({ baseURL: 'https://example.com' }, mockURLValidator);
 
-        const requestSpy = jest.spyOn(HttpClient.prototype, 'request');
+        const requestSpy = vi.spyOn(HttpClient.prototype, 'request');
 
         // Assert
         await httpClient[method]('/');
@@ -133,7 +135,7 @@ describe('HttpClient', () => {
         const headers = { 'Content-Type': 'application/json' };
         const httpClient = new HttpClient({ baseURL: 'https://example.com' }, mockURLValidator);
 
-        const requestSpy = jest.spyOn(HttpClient.prototype, 'request');
+        const requestSpy = vi.spyOn(HttpClient.prototype, 'request');
 
         // Assert
         await httpClient[method]('/', { headers });
@@ -153,7 +155,7 @@ describe('HttpClient', () => {
         const body = JSON.stringify({ payload: 'foobar' });
         const httpClient = new HttpClient({ baseURL: 'https://example.com' }, mockURLValidator);
 
-        const requestSpy = jest.spyOn(HttpClient.prototype, 'request');
+        const requestSpy = vi.spyOn(HttpClient.prototype, 'request');
 
         // Assert
         await httpClient[method]('/', body, { headers });
@@ -275,8 +277,8 @@ describe('HttpClient', () => {
       const request = new Request('https://example.com/resource', { method: 'GET' });
       const response = new Response(JSON.stringify({ ok: true }), { status: 200 });
 
-      const requestInterceptor: RequestInterceptor = jest.fn();
-      const responseInterceptor: ResponseInterceptor = jest.fn();
+      const requestInterceptor: RequestInterceptor = vi.fn();
+      const responseInterceptor: ResponseInterceptor = vi.fn();
 
       const httpClient = new HttpClient({ baseURL, timeout }, mockURLValidator);
 
@@ -302,8 +304,8 @@ describe('HttpClient', () => {
       const request = new Request('https://someothersite.com/resource', { method: 'GET' });
       const response = new Response(JSON.stringify({ ok: false }), { status: 400 });
 
-      const requestInterceptor: RequestInterceptor = jest.fn();
-      const responseInterceptor: ResponseInterceptor = jest.fn();
+      const requestInterceptor: RequestInterceptor = vi.fn();
+      const responseInterceptor: ResponseInterceptor = vi.fn();
 
       const httpClient = new HttpClient({ baseURL, timeout }, mockURLValidator);
 
@@ -342,7 +344,7 @@ describe('HttpClient', () => {
       // Arrange
 
       // Simulates a failure case where the base prototype is manipulated or replaced
-      jest.spyOn(Object, 'getPrototypeOf').mockReturnValueOnce(Date.prototype);
+      vi.spyOn(Object, 'getPrototypeOf').mockReturnValueOnce(Date.prototype);
 
       const instance = new HttpClient({ baseURL, timeout }, mockURLValidator);
 
@@ -357,7 +359,7 @@ describe('HttpClient', () => {
       const httpClient = new HttpClient({ baseURL, timeout }, mockURLValidator);
 
       // Spy on Object.getPrototypeOf
-      const getPrototypeOfSpy = jest.spyOn(Object, 'getPrototypeOf');
+      const getPrototypeOfSpy = vi.spyOn(Object, 'getPrototypeOf');
 
       // Act
       httpClient.create();
@@ -373,13 +375,12 @@ describe('HttpClient', () => {
     const headers = { 'Content-Type': 'application/json' };
 
     let client: HttpClient;
-    let fetchSpy: jest.SpyInstance<
-      Promise<Response>,
-      [input: RequestInfo | URL, init?: RequestInit | undefined]
+    let fetchSpy: ReturnType<
+      typeof vi.spyOn<[RequestInfo | URL, (RequestInit | undefined)?], Promise<Response>>
     >;
 
     beforeEach(() => {
-      fetchSpy = jest.spyOn(globalThis, 'fetch');
+      fetchSpy = vi.spyOn(globalThis, 'fetch');
       client = new HttpClient({ baseURL, timeout, headers });
     });
 
@@ -408,13 +409,13 @@ describe('HttpClient', () => {
       // Arrange
       fetchSpy.mockResolvedValue(new Response('{"message":"response"}', { status: 200 }));
 
-      const requestInterceptor: RequestInterceptor = jest.fn(({ request }) => {
+      const requestInterceptor: RequestInterceptor = vi.fn(({ request }) => {
         request.headers.set('X-Request-Interceptor', 'Intercepted');
 
         return { request };
       });
 
-      const responseInterceptor: ResponseInterceptor = jest.fn(({ response, request }) => {
+      const responseInterceptor: ResponseInterceptor = vi.fn(({ response, request }) => {
         const newResponse = new Response('{"message":"modified response"}', {
           status: response.status,
           headers: response.headers,
@@ -464,10 +465,10 @@ describe('HttpClient', () => {
       const timeout = 0;
       const httpClient = new HttpClient({ baseURL, timeout }, mockURLValidator);
 
-      jest.spyOn(globalThis, 'setTimeout');
-      jest.spyOn(AbortController.prototype, 'abort');
+      vi.spyOn(globalThis, 'setTimeout');
+      vi.spyOn(AbortController.prototype, 'abort');
 
-      jest.spyOn(globalThis, 'fetch').mockImplementationOnce((input, init) => {
+      vi.spyOn(globalThis, 'fetch').mockImplementationOnce((input, init) => {
         const request = input instanceof Request ? input : init;
 
         if (!request?.signal) {

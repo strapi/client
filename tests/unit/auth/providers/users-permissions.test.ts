@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import {
   UsersPermissionsAuthProvider,
   UsersPermissionsAuthProviderOptions,
@@ -46,10 +48,10 @@ describe('UsersPermissionsAuthProvider', () => {
   });
 
   describe('Preflight Validation', () => {
-    let spy: jest.SpyInstance;
+    let spy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-      spy = jest.spyOn(UsersPermissionsAuthProvider.prototype, 'preflightValidation');
+      spy = vi.spyOn(UsersPermissionsAuthProvider.prototype, 'preflightValidation');
     });
 
     afterEach(() => {
@@ -117,11 +119,9 @@ describe('UsersPermissionsAuthProvider', () => {
 
       const provider = new UsersPermissionsAuthProvider(FAKE_VALID_CONFIG);
 
-      jest
-        .spyOn(client, 'request')
-        .mockImplementationOnce(() =>
-          Promise.resolve(new Response(null, { status: 500, statusText }))
-        );
+      vi.spyOn(client, 'request').mockImplementationOnce(() =>
+        Promise.resolve(new Response(null, { status: 500, statusText }))
+      );
 
       // Act & Assert
       await expect(provider.authenticate(client)).rejects.toThrow(new Error(statusText));

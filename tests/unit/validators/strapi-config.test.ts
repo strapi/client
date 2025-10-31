@@ -1,14 +1,17 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
+
 import { StrapiValidationError, URLValidationError } from '../../../src/errors';
 import { StrapiConfigValidator, URLValidator } from '../../../src/validators';
 
 import type { StrapiClientConfig } from '../../../src/client';
+import type { Mock } from 'vitest';
 
 describe('Strapi Config Validator', () => {
-  let urlValidatorMock: jest.Mocked<URLValidator>;
+  let urlValidatorMock: URLValidator & { validate: Mock };
 
   beforeEach(() => {
-    urlValidatorMock = new URLValidator() as jest.Mocked<URLValidator>;
-    urlValidatorMock.validate = jest.fn();
+    urlValidatorMock = new URLValidator() as URLValidator & { validate: Mock };
+    urlValidatorMock.validate = vi.fn();
   });
 
   describe('validateConfig', () => {

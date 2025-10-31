@@ -1,16 +1,20 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { StrapiClient } from '../../../src/client';
 import { HTTPNotFoundError } from '../../../src/errors';
 import { FileNotFoundError } from '../../../src/files';
 import { mockFile, mockFiles } from '../../fixtures/files';
 
+import type { Mock } from 'vitest';
+
 describe('Strapi Client - Files Integration', () => {
   let strapi: StrapiClient;
-  let mockFetch: jest.Mock;
+  let mockFetch: Mock;
 
   beforeEach(() => {
     // Setup mock fetch
-    mockFetch = jest.fn();
-    jest.spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
+    mockFetch = vi.fn();
+    vi.spyOn(globalThis, 'fetch').mockImplementation(mockFetch);
 
     // Create a new Strapi client instance
     strapi = new StrapiClient({
@@ -19,7 +23,7 @@ describe('Strapi Client - Files Integration', () => {
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   describe('files property', () => {
@@ -38,7 +42,7 @@ describe('Strapi Client - Files Integration', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Act
@@ -57,7 +61,7 @@ describe('Strapi Client - Files Integration', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce([mockFile]),
+        json: vi.fn().mockResolvedValueOnce([mockFile]),
       });
 
       // Act
@@ -76,7 +80,7 @@ describe('Strapi Client - Files Integration', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFiles),
+        json: vi.fn().mockResolvedValueOnce(mockFiles),
       });
 
       // Create an authenticated Strapi client
@@ -104,7 +108,7 @@ describe('Strapi Client - Files Integration', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Act
@@ -157,7 +161,7 @@ describe('Strapi Client - Files Integration', () => {
       // Arrange
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: jest.fn().mockResolvedValueOnce(mockFile),
+        json: vi.fn().mockResolvedValueOnce(mockFile),
       });
 
       // Create an authenticated Strapi client
@@ -225,7 +229,7 @@ describe('Strapi Client - Files Integration', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+        json: vi.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
       });
 
       // Act
@@ -243,7 +247,7 @@ describe('Strapi Client - Files Integration', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         status: 200,
-        json: jest.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
+        json: vi.fn().mockResolvedValueOnce({ id: 1, name: 'deleted-file.jpg' }),
       });
 
       // Create an authenticated Strapi client

@@ -1,3 +1,5 @@
+import { describe, it, expect } from 'vitest';
+
 import { strapi } from '../../src';
 import { ApiTokenAuthProvider } from '../../src/auth';
 import { StrapiClient } from '../../src/client';

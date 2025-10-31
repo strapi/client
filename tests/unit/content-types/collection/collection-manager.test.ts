@@ -1,3 +1,5 @@
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+
 import { CollectionTypeManager } from '../../../../src/content-types';
 import { MockHttpClient } from '../../mocks';
 
@@ -5,17 +7,13 @@ describe('CollectionTypeManager CRUD Methods', () => {
   const mockHttpClient = new MockHttpClient({ baseURL: 'http://localhost:1337' });
 
   beforeEach(() => {
-    jest
-      .spyOn(MockHttpClient.prototype, 'request')
-      .mockImplementation(() =>
-        Promise.resolve(
-          new Response(JSON.stringify({ data: { id: 1 }, meta: {} }), { status: 200 })
-        )
-      );
+    vi.spyOn(MockHttpClient.prototype, 'request').mockImplementation(() =>
+      Promise.resolve(new Response(JSON.stringify({ data: { id: 1 }, meta: {} }), { status: 200 }))
+    );
   });
 
   afterEach(() => {
-    jest.restoreAllMocks();
+    vi.restoreAllMocks();
   });
 
   it('should return an object with CRUD methods for a collection type', () => {
@@ -46,7 +44,7 @@ describe('CollectionTypeManager CRUD Methods', () => {
       const expected =
         '/articles?locale=en&populate=author&fields%5B0%5D=title&fields%5B1%5D=description&filters%5Bpublished%5D=true&sort=createdAt%3Adesc&pagination%5Bpage%5D=1&pagination%5BpageSize%5D=10';
 
-      jest.spyOn(MockHttpClient.prototype, 'request').mockImplementationOnce(() =>
+      vi.spyOn(MockHttpClient.prototype, 'request').mockImplementationOnce(() =>
         Promise.resolve(
           new Response(JSON.stringify({ data: [{ id: 1 }, { id: 2 }], meta: {} }), {
             status: 200,
@@ -216,13 +214,11 @@ describe('CollectionTypeManager CRUD Methods', () => {
 
   describe('Users-Permissions Plugin Support', () => {
     beforeEach(() => {
-      jest
-        .spyOn(MockHttpClient.prototype, 'request')
-        .mockImplementation(() =>
-          Promise.resolve(
-            new Response(JSON.stringify({ id: 1, username: 'testuser' }), { status: 200 })
-          )
-        );
+      vi.spyOn(MockHttpClient.prototype, 'request').mockImplementation(() =>
+        Promise.resolve(
+          new Response(JSON.stringify({ id: 1, username: 'testuser' }), { status: 200 })
+        )
+      );
     });
 
     it('should NOT wrap data when plugin is set to "users-permissions"', async () => {
@@ -293,11 +289,9 @@ describe('CollectionTypeManager CRUD Methods', () => {
 
   describe('Plugin Route Prefixing', () => {
     beforeEach(() => {
-      jest
-        .spyOn(MockHttpClient.prototype, 'request')
-        .mockImplementation(() =>
-          Promise.resolve(new Response(JSON.stringify({ id: 1, title: 'Test' }), { status: 200 }))
-        );
+      vi.spyOn(MockHttpClient.prototype, 'request').mockImplementation(() =>
+        Promise.resolve(new Response(JSON.stringify({ id: 1, title: 'Test' }), { status: 200 }))
+      );
     });
 
     it('should prefix routes with plugin name by default', async () => {

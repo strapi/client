@@ -1,3 +1,5 @@
+import { vi } from 'vitest';
+
 export const mockResponse = (status: number, statusText: string): Response => ({
   status,
   statusText,
@@ -6,13 +8,13 @@ export const mockResponse = (status: number, statusText: string): Response => ({
   redirected: false,
   type: 'basic',
   url: 'https://example.com',
-  clone: jest.fn(),
+  clone: vi.fn(),
   body: null,
   bodyUsed: false,
-  text: jest.fn().mockResolvedValue(''),
-  json: jest.fn().mockResolvedValue({}),
-  blob: jest.fn().mockResolvedValue(new Blob()),
-  bytes: jest.fn().mockResolvedValue(new Uint8Array()),
-  formData: jest.fn().mockResolvedValue(new FormData()),
-  arrayBuffer: jest.fn().mockResolvedValue(new ArrayBuffer(0)),
+  text: vi.fn().mockResolvedValue(''),
+  json: vi.fn().mockResolvedValue({}),
+  blob: vi.fn().mockResolvedValue(new Blob()),
+  bytes: vi.fn().mockResolvedValue(new Uint8Array()),
+  formData: vi.fn().mockResolvedValue(new FormData()),
+  arrayBuffer: vi.fn().mockResolvedValue(new ArrayBuffer(0)),
 });
