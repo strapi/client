@@ -365,7 +365,12 @@ export class StrapiClient {
    * @see CollectionTypeManager
    * @see StrapiClient
    */
-  collection(resource: string, options: ClientCollectionOptions = {}) {
+  collection<T extends string>(
+    resource: T,
+    options: ClientCollectionOptions = {}
+  ): T extends 'users'
+    ? UsersPermissionsUsersManager & UsersPermissionsUsersIdOverloads
+    : CollectionTypeManager {
     const { path, plugin } = options;
 
     // Auto-detect well-known collection resources and apply their plugin configuration
@@ -379,10 +384,13 @@ export class StrapiClient {
         this._httpClient
       );
 
-      return manager as UsersPermissionsUsersManager & UsersPermissionsUsersIdOverloads;
+      return manager as any;
     }
 
-    return new CollectionTypeManager({ resource, path, plugin: effectivePlugin }, this._httpClient);
+    return new CollectionTypeManager(
+      { resource, path, plugin: effectivePlugin },
+      this._httpClient
+    ) as any;
   }
 
   /**
