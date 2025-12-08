@@ -2,7 +2,7 @@ name: 'Demo App Strapi Version Check'
 
 on:
   schedule:
-    - cron: '0 23 * * 3' # Run weekly on Wednesday at 23:00 UTC
+    - cron: '0 23 */2 * *' # Run every 2 days at 23:00 UTC
   workflow_dispatch: # Allow manual trigger
 
 permissions:
