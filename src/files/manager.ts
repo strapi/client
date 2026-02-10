@@ -316,7 +316,7 @@ export class FilesManager {
   ): Promise<MediaUploadResponse> {
     const formData = new FormData();
 
-    const blob = new Blob([buffer as any], { type: options.mimetype });
+    const blob = new Blob([new Uint8Array(buffer)], { type: options.mimetype });
     formData.append('files', blob, options.filename);
 
     if (options.fileInfo) {
