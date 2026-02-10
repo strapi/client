@@ -1,3 +1,4 @@
 npx --no-install lint-staged
+pnpm run format:check
 pnpm run ts:check
 pnpm run test:coverage

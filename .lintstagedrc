@@ -1,3 +1,3 @@
 {
-  "{src,tests}/**/*.{js,ts,jsx,tsx,yml,yaml}": ["pnpm run prettier:write", "pnpm run lint:fix"]
+  "{src,tests}/**/*.{js,ts,jsx,tsx,yml,yaml}": ["pnpm run format:write", "pnpm run lint:fix"]
 }
