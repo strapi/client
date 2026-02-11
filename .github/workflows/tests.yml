@@ -33,6 +33,52 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
 
+  lint:
+    name: 'Check linting'
+    needs: [cache-and-install]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.1.0
+          run_install: true
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Lint
+        run: pnpm run lint
+
+  format:
+    name: 'Check formatting'
+    needs: [cache-and-install]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 9.1.0
+          run_install: true
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Format check
+        run: pnpm run format:check
+
   build:
     name: 'build (node: ${{ matrix.node }})'
     needs: [cache-and-install]
