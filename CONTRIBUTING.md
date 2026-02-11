@@ -264,11 +264,11 @@ Before submitting a PR (pull request), verify that all checks pass:
 
 1. **Run Linting**
    ```bash
-   pnpm lint
+   pnpm lint:fix
    ```
 2. **Format Code**
    ```bash
-   pnpm prettier:check
+   pnpm format:write
    ```
 3. **TypeScript Checks**
    ```bash
@@ -348,7 +348,7 @@ commands**:
 - **Formatting**: verifies if the code adheres to `Prettier` formatting rules.
 
   ```bash
-  pnpm prettier:check
+  pnpm format:check
   ```
 
 - **TypeScript Validation**: ensures TypeScript types are valid and there is no type-related breaking error.
