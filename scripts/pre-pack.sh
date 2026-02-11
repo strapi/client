@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Run the Prettier check
-pnpm prettier:check &&
+pnpm format:check &&
 
 # Run linting
 pnpm lint  &&
