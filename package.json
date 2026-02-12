@@ -65,37 +65,37 @@
     "prepack": "pnpm exec ./scripts/pre-pack.sh"
   },
   "devDependencies": {
-    "@commitlint/cli": "19.6.1",
-    "@commitlint/config-conventional": "19.6.0",
-    "@commitlint/types": "19.5.0",
-    "@rollup/plugin-commonjs": "28.0.2",
-    "@rollup/plugin-node-resolve": "16.0.0",
-    "@rollup/plugin-replace": "6.0.2",
+    "@commitlint/cli": "20.4.1",
+    "@commitlint/config-conventional": "20.4.1",
+    "@commitlint/types": "20.4.0",
+    "@rollup/plugin-commonjs": "29.0.0",
+    "@rollup/plugin-node-resolve": "16.0.3",
+    "@rollup/plugin-replace": "6.0.3",
     "@rollup/plugin-terser": "0.4.4",
-    "@rollup/plugin-typescript": "12.1.2",
+    "@rollup/plugin-typescript": "12.3.0",
     "@strapi/eslint-config": "0.2.1",
-    "@types/node": "^20",
+    "@types/node": "^25.2.2",
     "@types/debug": "4.1.12",
-    "@types/qs": "6.9.18",
+    "@types/qs": "6.14.0",
     "@vitest/coverage-v8": "latest",
-    "@typescript-eslint/eslint-plugin": "8.21.0",
-    "@typescript-eslint/parser": "8.21.0",
-    "eslint": "8.57.1",
-    "eslint-plugin-import": "2.31.0",
+    "@typescript-eslint/eslint-plugin": "8.55.0",
+    "@typescript-eslint/parser": "8.55.0",
+    "eslint": "9.39.2",
+    "eslint-plugin-import": "2.32.0",
     "husky": "9.1.7",
-    "lint-staged": "15.4.1",
-    "prettier": "3.4.2",
-    "rimraf": "6.0.1",
-    "rollup": "4.31.0",
-    "typescript": "5.7.3",
-    "vitest": "^4.0.3"
+    "lint-staged": "16.2.7",
+    "prettier": "3.8.1",
+    "rimraf": "6.1.2",
+    "rollup": "4.57.1",
+    "typescript": "5.9.3",
+    "vitest": "^4.0.18"
   },
   "packageManager": "pnpm@9.1.0",
   "engines": {
     "node": ">=20.18.2 <=24.x.x"
   },
   "dependencies": {
-    "debug": "4.4.0",
-    "qs": "6.14.0"
+    "debug": "4.4.3",
+    "qs": "6.14.1"
   }
 }
