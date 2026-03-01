@@ -3,6 +3,7 @@ import nodeResolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
+import json from '@rollup/plugin-json';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -163,5 +164,64 @@ const iife_build = {
   ],
 };
 
+/**
+ * This configuration is designed to create IIFE format bundles suitable for direct
+ * inclusion in web browsers.
+ *
+ * Outputs:
+ * - IIFE Minified (dist/bundle.browser.min.js): Minified JavaScript file containing the entire bundle, optimized
+ *   for direct browser usage and embedding, exposed with the global `strapi` variable.
+ *
+ * External Dependencies:
+ * - `debug` is excluded from the bundle and replaced with a no-op function.
+ *
+ * @type {import('rollup').RollupOptions}
+ */
+const cli_build = {
+  input: 'src/bin/cli.ts',
+  cache: true,
+  output: [
+    // CommonJS build
+    {
+      file: 'dist/bin/cli.cjs',
+      format: 'cjs',
+      sourcemap: isProduction ? 'hidden' : true,
+      exports: 'named',
+    },
+    // ESM build
+    {
+      file: 'dist/bin/cli.mjs',
+      format: 'esm',
+      sourcemap: isProduction ? 'hidden' : true,
+      exports: 'named',
+    },
+  ],
+  external: ['debug', 'openapi-typescript'],
+  plugins: [
+    json(), // Allow Rollup to import JSON files, which may be used for configuration or other purposes in the CLI
+    // Locate modules using the Node resolution algorithm, for using third party modules in node_modules
+    nodeResolve({
+      browser: false, // "browser" properties in package files are ignored
+      preferBuiltins: true, // Prefer built-in modules
+    }),
+    // Convert CommonJS modules to ES6, so they can be included in a Rollup bundle
+    commonjs(),
+    // Transpile (disable declaration emit — CLI binaries don't need .d.ts files,
+    // and the shared tsconfig would produce paths like ../errors/strapi.d.ts that
+    // are invalid relative to the dist/bin/ output directory)
+    typescript({
+      tsconfig: './tsconfig.build.json',
+      compilerOptions: { declaration: false, declarationMap: false },
+    }),
+    // Replace environment variables
+    replace({
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
+      preventAssignment: true,
+    }),
+    // Minify the output in production
+    isProduction && terser(),
+  ],
+};
+
 // Export configurations
-export default [node_build, browser_build, iife_build];
+export default [node_build, browser_build, iife_build, cli_build];
