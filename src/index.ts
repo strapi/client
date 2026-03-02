@@ -88,7 +88,7 @@ export interface Config {
  * @throws {StrapiInitializationError} If the provided baseURL doesn't conform to a valid HTTP or HTTPS URL,
  *                                        or if the auth configuration is invalid.
  */
-export const strapi = (config: Config) => {
+export const strapi = <Paths extends any = never>(config: Config) => {
   const { baseURL, auth, headers } = config;
 
   const clientConfig: StrapiClientConfig = { baseURL, headers };
@@ -103,5 +103,5 @@ export const strapi = (config: Config) => {
     };
   }
 
-  return new StrapiClient(clientConfig);
+  return new StrapiClient<Paths>(clientConfig);
 };
