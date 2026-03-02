@@ -24,6 +24,7 @@ export type { StrapiClientConfig, StrapiClient } from './client';
 export type { CollectionTypeManager, SingleTypeManager } from './content-types';
 export type { FilesManager, FileQueryParams, FileResponse, FileListResponse } from './files';
 export type * as API from './types/content-api';
+export type * as CLIENT from './types/client';
 
 // ############################
 // #    Deprecated symbols    #
@@ -38,4 +39,4 @@ export type StrapiConfig = StrapiClientConfig;
 /**
  * @deprecated This type will be removed in v2, consider using {@link StrapiClient} as a replacement
  */
-export type Strapi = StrapiClient;
+export type Strapi = StrapiClient<unknown>;

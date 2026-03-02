@@ -1,0 +1,4 @@
+{
+  "strapiPath": "../../../strapi/examples/kitchensink-ts/",
+  "output": "src/strapi-client/"
+}

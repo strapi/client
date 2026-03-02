@@ -1,4 +1,5 @@
 import createDebug from 'debug';
+import qs from 'qs';
 
 import { AuthManager } from './auth';
 import {
@@ -11,6 +12,12 @@ import { StrapiError, StrapiInitializationError } from './errors';
 import { FilesManager } from './files';
 import { HttpClient } from './http';
 import { AuthInterceptors, HttpInterceptors } from './interceptors';
+import {
+  ContentTypeNames,
+  GetPaths,
+  StaticParameters,
+  StrapiRequestInitPathGate,
+} from './types/client';
 import { StrapiConfigValidator } from './validators';
 
 import type { UsersPermissionsUsersIdOverloads } from './content-types';
@@ -51,7 +58,7 @@ export interface AuthConfig<T = unknown> {
  * It serves as the main interface through which users interact with
  * their Strapi installation programmatically.
  */
-export class StrapiClient {
+export class StrapiClient<Paths = never> {
   /** @internal */
   private readonly _config: StrapiClientConfig;
 
@@ -303,8 +310,65 @@ export class StrapiClient {
    * - The method automatically handles authentication by checking if the user is authenticated and attempts to authenticate if not.
    * - The base URL is prepended to the provided endpoint path.
    */
-  fetch(url: string, init?: RequestInit) {
-    return this._httpClient.request(url, init);
+  fetch<T extends GetPaths<Paths>>(url: T, init?: StrapiRequestInitPathGate<Paths, T>) {
+    // build request init
+    let requestInit = undefined;
+    let stringURL = url as string;
+    if (init) {
+      // extract body information
+      const body = init?.body;
+      delete init?.body;
+
+      const parameters = init?.parameters as StaticParameters | undefined;
+      delete init?.parameters;
+
+      // prepare body
+      let requestBody = undefined;
+      let headers = undefined;
+      // ReadableStream | Blob | BufferSource | FormData | URLSearchParams | string MISSING: ArrayBufferView
+      if (
+        body &&
+        typeof body === 'object' &&
+        !(body instanceof ReadableStream) &&
+        !(body instanceof Blob) &&
+        !(body instanceof ArrayBuffer) &&
+        !(body instanceof FormData) &&
+        !(body instanceof URLSearchParams)
+      ) {
+        // If the body is an object (but not FormData), stringify it and set the content type to JSON
+        requestBody = body ? JSON.stringify(body) : undefined;
+        headers = {
+          ...init?.headers,
+          'Content-Type': 'application/json',
+        };
+      } else {
+        // For other body types (like string), use them directly without modification
+        requestBody = body;
+        headers = {
+          ...init?.headers,
+        };
+      }
+      delete init?.headers;
+
+      // build url
+      // apply path parameters to the URL
+      if (parameters?.path) {
+        Object.entries(parameters.path).forEach(([key, value]) => {
+          stringURL = stringURL.replace(`{${key}}`, encodeURIComponent(String(value)));
+        });
+      }
+      // apply query parameters to the URL
+      if (parameters?.query) {
+        const queryString = qs.stringify(parameters.query, { arrayFormat: 'brackets' });
+        stringURL += `?${queryString}`;
+      }
+      requestInit = {
+        ...init,
+        body: requestBody,
+        headers,
+      };
+    }
+    return this._httpClient.request(stringURL, requestInit);
   }
 
   /**
@@ -365,10 +429,10 @@ export class StrapiClient {
    * @see CollectionTypeManager
    * @see StrapiClient
    */
-  collection<T extends string>(
-    resource: T,
+  collection<ContentTypeName extends ContentTypeNames<Paths>>(
+    resource: ContentTypeName,
     options: ClientCollectionOptions = {}
-  ): T extends 'users'
+  ): ContentTypeName extends 'users'
     ? UsersPermissionsUsersManager & UsersPermissionsUsersIdOverloads
     : CollectionTypeManager {
     const { path, plugin } = options;
