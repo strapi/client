@@ -14,8 +14,11 @@ const nextConfig: NextConfig = {
     },
   },
 
-  // Allow images from Strapi server
+  // Allow images from Strapi server. `dangerouslyAllowLocalIP` is required because
+  // the image optimizer resolves localhost to 127.0.0.1 / ::1, which Next blocks by
+  // default (SSRF). Safe here: demo only, fixed Strapi origin in remotePatterns.
   images: {
+    dangerouslyAllowLocalIP: true,
     remotePatterns: [
       {
         protocol: 'http',
