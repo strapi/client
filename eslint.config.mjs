@@ -1,4 +1,4 @@
-import pluginEslintImport from 'eslint-plugin-import';
+import pluginImportX from 'eslint-plugin-import-x';
 import pluginTypescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
@@ -14,12 +14,14 @@ export default [
       // Common directories
       '**/dist',
       '**/node_modules',
-      // Demo-related directories
-      'demo/**/.next',
+      // Demos ship their own ESLint; loading their configs from the repo root breaks `eslint .`
+      'demo/**',
     ],
   },
   {
     languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
       parser: tsParser,
       parserOptions: {
         project: ['./tsconfig.eslint.json'],
@@ -28,7 +30,7 @@ export default [
     files: ['{src,tests}/**/*.{js,ts,yml,yaml}'],
     plugins: {
       '@typescript-eslint': pluginTypescriptEslint,
-      import: pluginEslintImport,
+      'import-x': pluginImportX,
     },
     rules: {
       // Use the TypeScript port of 'no-unused-vars' to prevent false positives on abstract methods parameters
@@ -48,12 +50,12 @@ export default [
         },
       ],
 
-      // eslint-plugin-import
-      'import/no-default-export': 'error',
-      'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
-      'import/first': ['error'],
-      'import/exports-last': ['error'],
-      'import/order': [
+      // eslint-plugin-import-x (fork of eslint-plugin-import; supports ESLint 10)
+      'import-x/no-default-export': 'error',
+      'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+      'import-x/first': ['error'],
+      'import-x/exports-last': ['error'],
+      'import-x/order': [
         'error',
         {
           groups: [
