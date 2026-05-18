@@ -65,7 +65,7 @@
     "prepack": "pnpm exec ./scripts/pre-pack.sh"
   },
   "devDependencies": {
-    "@commitlint/cli": "20.4.1",
+    "@commitlint/cli": "21.0.1",
     "@commitlint/config-conventional": "20.4.1",
     "@commitlint/types": "20.4.0",
     "@rollup/plugin-commonjs": "29.0.2",
