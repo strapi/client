@@ -58,8 +58,8 @@ importers:
         specifier: latest
         version: 4.1.6(vitest@4.1.6)
       ajv:
-        specifier: 8.18.0
-        version: 8.18.0
+        specifier: 8.20.0
+        version: 8.20.0
       eslint:
         specifier: 10.4.0
         version: 10.4.0(jiti@2.6.1)
@@ -993,8 +993,8 @@ packages:
   ajv@6.15.0:
     resolution: {integrity: sha512-fgFx7Hfoq60ytK2c7DhnF8jIvzYgOMxfugjLOSMHjLIPgenqa7S7oaagATUq99mV6IYvN2tRmC0wnTYX6iPbMw==}
 
-  ajv@8.18.0:
-    resolution: {integrity: sha512-PlXPeEWMXMZ7sPYOHqmDyCJzcfNrUr3fGNKtezX14ykXOEIvyK81d+qydx89KY5O71FKMPaQ2vBfBFI5NHR63A==}
+  ajv@8.20.0:
+    resolution: {integrity: sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA==}
 
   ansi-escapes@7.3.0:
     resolution: {integrity: sha512-BvU8nYgGQBxcmMuEeUEmNTvrMVjJNSH7RgW24vXexN4Ven6qCvy4TntnvlnwnMLTVlcRQQdbRY8NKnaIoeWDNg==}
@@ -2060,7 +2060,7 @@ snapshots:
   '@commitlint/config-validator@21.0.1':
     dependencies:
       '@commitlint/types': 21.0.1
-      ajv: 8.18.0
+      ajv: 8.20.0
 
   '@commitlint/ensure@21.0.1':
     dependencies:
@@ -2777,7 +2777,7 @@ snapshots:
       json-schema-traverse: 0.4.1
       uri-js: 4.4.1
 
-  ajv@8.18.0:
+  ajv@8.20.0:
     dependencies:
       fast-deep-equal: 3.1.3
       fast-uri: 3.1.2
