@@ -22,8 +22,8 @@ importers:
         specifier: 20.4.1
         version: 20.4.1
       '@commitlint/types':
-        specifier: 20.4.0
-        version: 20.4.0
+        specifier: 21.0.1
+        version: 21.0.1
       '@rollup/plugin-commonjs':
         specifier: 29.0.2
         version: 29.0.2(rollup@4.60.4)
