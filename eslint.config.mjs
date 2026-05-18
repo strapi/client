@@ -1,4 +1,4 @@
-import pluginEslintImport from 'eslint-plugin-import';
+import pluginEslintImportX from 'eslint-plugin-import-x';
 import pluginTypescriptEslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 
@@ -15,7 +15,7 @@ export default [
       '**/dist',
       '**/node_modules',
       // Demo-related directories
-      'demo/**/.next',
+      'demo/**',
     ],
   },
   {
@@ -28,7 +28,7 @@ export default [
     files: ['{src,tests}/**/*.{js,ts,yml,yaml}'],
     plugins: {
       '@typescript-eslint': pluginTypescriptEslint,
-      import: pluginEslintImport,
+      'import-x': pluginEslintImportX,
     },
     rules: {
       // Use the TypeScript port of 'no-unused-vars' to prevent false positives on abstract methods parameters
@@ -48,12 +48,12 @@ export default [
         },
       ],
 
-      // eslint-plugin-import
-      'import/no-default-export': 'error',
-      'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
-      'import/first': ['error'],
-      'import/exports-last': ['error'],
-      'import/order': [
+      // eslint-plugin-import-x (maintained fork; avoids vulnerable minimatch 3.x from eslint-plugin-import)
+      'import-x/no-default-export': 'error',
+      'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+      'import-x/first': ['error'],
+      'import-x/exports-last': ['error'],
+      'import-x/order': [
         'error',
         {
           groups: [
