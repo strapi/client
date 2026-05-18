@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directories:
+      - /
+      - /demo/node-javascript
+      - /demo/node-typescript
+      - /demo/next-server-components
+      - /demo/react-vite
+      - /demo/.strapi-app
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
