@@ -7,12 +7,22 @@ updates:
       - /demo/node-typescript
       - /demo/next-server-components
       - /demo/react-vite
-      - /demo/.strapi-app
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
     commit-message:
       prefix: chore
+
+  # Demo Strapi app: @strapi/* versions are upgraded by demo-strapi-version-check.yml
+  - package-ecosystem: npm
+    directory: /demo/.strapi-app
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore
+    ignore:
+      - dependency-name: '@strapi/*'
 
   - package-ecosystem: github-actions
     directory: /
