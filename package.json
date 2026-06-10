@@ -76,7 +76,7 @@
     "@types/debug": "4.1.13",
     "@types/node": "^25.2.2",
     "@types/qs": "6.15.1",
-    "@typescript-eslint/eslint-plugin": "8.60.0",
+    "@typescript-eslint/eslint-plugin": "8.60.1",
     "@typescript-eslint/parser": "8.60.1",
     "@vitest/coverage-v8": "latest",
     "ajv": "8.20.0",
