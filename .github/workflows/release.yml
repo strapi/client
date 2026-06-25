@@ -1,0 +1,156 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'npm dist-tag to publish under'
+        required: true
+        default: 'latest'
+        type: choice
+        options:
+          - latest
+          - next
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  release:
+    name: Release
+    if: github.repository == 'strapi/client'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for npm trusted publishing (OIDC)
+    outputs:
+      package_version: ${{ steps.package_version.outputs.package_version }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.1.0
+
+      - name: Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+
+      - name: Update npm for trusted publishing
+        run: npm install -g npm@latest # OIDC trusted publishing requires npm >= 11.5.1
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build:clean
+
+      - name: Resolve package version
+        id: package_version
+        run: echo "package_version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to npm
+        run: npm publish --provenance --access public --tag ${{ inputs.tag }}
+
+  notify_slack:
+    name: 'Notify Slack'
+    needs: [release]
+    runs-on: ubuntu-latest
+    if: github.repository == 'strapi/client' && success()
+    permissions: {}
+    steps:
+      - name: send message to slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "@strapi/client ${{ needs.release.outputs.package_version }} has been successfuly deployed :tada:",
+                    "emoji": true
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Checkout the *<https://github.com/strapi/client/releases|release note>*"
+                  }
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "image",
+                      "image_url": "https://github.com/${{ github.triggering_actor }}.png",
+                      "alt_text": "${{ github.triggering_actor }} avatar"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "Triggered by *${{ github.triggering_actor }}*"
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
+  notify_on_error:
+    needs: [release]
+    name: notify on error
+    runs-on: ubuntu-latest
+    if: failure()
+    permissions: {}
+    steps:
+      - name: send message to slack
+        uses: slackapi/slack-github-action@v1.24.0
+        with:
+          payload: |
+            {
+              "blocks": [
+                  {
+                    "type": "header",
+                    "text": {
+                      "type": "plain_text",
+                      "text": "Deployment failed or has been rejected :disappointed:",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "section",
+                    "fields": [
+                      {
+                        "type": "mrkdwn",
+                        "text": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|Click here to see the logs>"
+                      }
+                    ]
+                  },
+                  {
+                    "type": "context",
+                    "elements": [
+                      {
+                        "type": "image",
+                        "image_url": "https://github.com/${{ github.triggering_actor }}.png",
+                        "alt_text": "${{ github.triggering_actor }} avatar"
+                      },
+                      {
+                        "type": "mrkdwn",
+                        "text": "Triggered by *${{ github.triggering_actor }}*"
+                      }
+                    ]
+                  }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_RELEASE_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
