@@ -42,7 +42,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Update npm for trusted publishing
-        run: npm install -g npm@latest # OIDC trusted publishing requires npm >= 11.5.1
+        run: npm install -g 'npm@^11.5.1' # OIDC trusted publishing requires npm >= 11.5.1
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -74,7 +74,7 @@ jobs:
                   "type": "header",
                   "text": {
                     "type": "plain_text",
-                    "text": "@strapi/client ${{ needs.release.outputs.package_version }} has been successfuly deployed :tada:",
+                    "text": "@strapi/client ${{ needs.release.outputs.package_version }} has been successfully deployed :tada:",
                     "emoji": true
                   }
                 },
@@ -82,7 +82,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "Checkout the *<https://github.com/strapi/client/releases|release note>*"
+                    "text": "Check out the *<https://github.com/strapi/client/releases|release note>*"
                   }
                 },
                 {
