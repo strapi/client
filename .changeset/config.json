@@ -1,0 +1,7 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@2.3.1/schema.json",
+  "commit": false,
+  "changelog": ["@changesets/changelog-github", { "repo": "strapi/client" }],
+  "access": "public",
+  "baseBranch": "main"
+}
