@@ -65,7 +65,7 @@ jobs:
     permissions: {}
     steps:
       - name: send message to slack
-        uses: slackapi/slack-github-action@v1.24.0
+        uses: slackapi/slack-github-action@v3.0.5
         with:
           payload: |
             {
@@ -113,7 +113,7 @@ jobs:
     permissions: {}
     steps:
       - name: send message to slack
-        uses: slackapi/slack-github-action@v1.24.0
+        uses: slackapi/slack-github-action@v3.0.5
         with:
           payload: |
             {
