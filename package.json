@@ -85,7 +85,7 @@
     "fast-uri": "4.1.1",
     "flatted": "3.4.3",
     "husky": "9.1.7",
-    "lint-staged": "17.1.0",
+    "lint-staged": "17.3.0",
     "picomatch": "4.0.5",
     "postcss": "^8.5.10",
     "prettier": "3.9.6",
