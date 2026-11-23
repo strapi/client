@@ -39,6 +39,11 @@ jobs:
     timeout-minutes: 30
     permissions:
       contents: read # the PAT (not GITHUB_TOKEN) does the writing
+    env:
+      # The checkout below stores the write-capable PAT in .git/config, so no
+      # dependency lifecycle script may run in this job. This also covers every
+      # `pnpm install` that Claude runs during triage.
+      npm_config_ignore_scripts: 'true'
     steps:
       - name: Checkout main
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,7 +62,7 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
 
-      - run: pnpm install
+      - run: pnpm install --frozen-lockfile --ignore-scripts
 
       - name: Fetch open Dependabot alerts
         env:
